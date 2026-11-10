@@ -21,7 +21,9 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
       ? "Bản đầy đủ · Free To Use"
       : currentTrack.playbackSource === "jamendo"
         ? "Bản đầy đủ · Jamendo"
-      : "Không có nguồn phát đầy đủ công khai"
+        : currentTrack.playbackSource === "youtube"
+          ? "Video YouTube · player Echora"
+          : "Không có nguồn phát đầy đủ công khai"
 
   return (
     <div className="flex items-center gap-3.5 w-[30%] min-w-[180px] max-w-[360px] select-none">

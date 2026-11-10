@@ -13,6 +13,7 @@ interface NowPlayingViewProps {
   onOpenQueue: () => void
   onPlayTrack: (song: Song) => void
   onNavigate?: (view: ViewType, id?: string) => void
+  hideMedia?: boolean
 }
 
 export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
@@ -24,6 +25,7 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
   onOpenQueue,
   onPlayTrack,
   onNavigate,
+  hideMedia = false,
 }) => {
   const [artistDetails, setArtistDetails] = useState<Artist | null>(propArtist || null)
 
@@ -52,13 +54,15 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
   return (
     <div className="space-y-5 select-none pb-4">
       {/* 1. Big Album Artwork (Full width of the right panel) */}
-      <div className="relative aspect-square rounded-lg overflow-hidden shadow-2xl group bg-neutral-950">
-        <img
-          src={currentTrack.coverUrl}
-          alt={currentTrack.title}
-          className="w-full h-full object-cover filter contrast-110"
-        />
-      </div>
+      {!hideMedia && (
+        <div className="relative aspect-square rounded-lg overflow-hidden shadow-2xl group bg-neutral-950">
+          <img
+            src={currentTrack.coverUrl}
+            alt={currentTrack.title}
+            className="w-full h-full object-cover filter contrast-110"
+          />
+        </div>
+      )}
 
       {/* 2. Track Title, Artists & "+" Add Circle Button */}
       <div className="flex items-start justify-between gap-2">

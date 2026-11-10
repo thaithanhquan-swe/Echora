@@ -4,6 +4,7 @@ import { usePlayer } from "@/context/PlayerContext"
 import { ViewType } from "@/types/music"
 import { NowPlayingView } from "@/components/sidebar/NowPlayingView"
 import { QueueListView } from "@/components/sidebar/QueueListView"
+import { YouTubeVideoPanel } from "@/components/sidebar/YouTubeVideoPanel"
 
 interface RightSidebarProps {
   onNavigate?: (view: ViewType, id?: string) => void
@@ -25,7 +26,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
     setQueueOpen,
   } = usePlayer()
 
-  if (!isRightSidebarOpen && !isQueueOpen) {
+  if (!isRightSidebarOpen && !isQueueOpen && currentTrack?.playbackSource !== "youtube") {
     return null
   }
 
@@ -46,7 +47,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
           </h3>
         </div>
 
-        <button
+        {currentTrack?.playbackSource !== "youtube" && <button
           onClick={() => {
             setRightSidebarOpen(false)
             setQueueOpen(false)
@@ -55,11 +56,12 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
           title="Đóng"
         >
           <X className="h-4 w-4 stroke-[2]" />
-        </button>
+        </button>}
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6 spotify-scroll">
+        {currentTrack?.youtubeVideoId && <YouTubeVideoPanel track={currentTrack} />}
         {isQueueOpen ? (
           <QueueListView
             currentTrack={currentTrack}
@@ -78,6 +80,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
             onOpenQueue={() => setQueueOpen(true)}
             onPlayTrack={playTrack}
             onNavigate={onNavigate}
+            hideMedia={Boolean(currentTrack.youtubeVideoId)}
           />
         ) : (
           <div className="flex flex-col items-center justify-center py-24 text-center p-6 text-spotify-subdued">

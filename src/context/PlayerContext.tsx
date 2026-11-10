@@ -3,8 +3,14 @@ import { Song } from "@/types/music"
 import { findAudiusTrackStream } from "@/services/audiusApi"
 import { findFreeToUseStream } from "@/services/freeToUseApi"
 import { findJamendoTrackStream } from "@/services/jamendoApi"
+import { findYouTubeVideo } from "@/services/youtubeApi"
 
 export type RepeatMode = "off" | "all" | "one"
+
+export type YouTubePlayerController = Pick<YouTubePlayer,
+  "playVideo" | "pauseVideo" | "stopVideo" | "loadVideoById" | "cueVideoById" |
+  "seekTo" | "setVolume" | "mute" | "unMute" | "getCurrentTime" | "getDuration" | "getPlayerState"
+>
 
 interface PlayerContextType {
   currentTrack: Song | null
@@ -21,6 +27,9 @@ interface PlayerContextType {
   likedSongs: Song[]
   isRightSidebarOpen: boolean
   isQueueOpen: boolean
+  registerYouTubePlayer: (player: YouTubePlayerController | null) => void
+  updateYouTubeTime: (time: number, duration: number) => void
+  handleYouTubeStateChange: (state: number) => void
 
   // Actions
   playTrack: (song: Song, contextQueue?: Song[]) => Promise<void>
@@ -95,6 +104,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const isShuffledRef = useRef<boolean>(false)
   const repeatModeRef = useRef<RepeatMode>("off")
   const playbackRequestRef = useRef<AbortController | null>(null)
+  const youtubePlayerRef = useRef<YouTubePlayerController | null>(null)
 
   queueRef.current = queue
   isShuffledRef.current = isShuffled
@@ -161,7 +171,47 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume
     }
+    const youtubePlayer = youtubePlayerRef.current
+    if (youtubePlayer) {
+      if (isMuted) youtubePlayer.mute()
+      else {
+        youtubePlayer.unMute()
+        youtubePlayer.setVolume(Math.round(volume * 100))
+      }
+    }
   }, [volume, isMuted])
+
+  const registerYouTubePlayer = useCallback((player: YouTubePlayerController | null) => {
+    youtubePlayerRef.current = player
+    if (player) {
+      if (isMuted) player.mute()
+      else {
+        player.unMute()
+        player.setVolume(Math.round(volume * 100))
+      }
+    }
+  }, [isMuted, volume])
+
+  const updateYouTubeTime = useCallback((time: number, nextDuration: number) => {
+    if (Number.isFinite(time)) setCurrentTime(time)
+    if (Number.isFinite(nextDuration) && nextDuration > 0) setDuration(nextDuration)
+  }, [])
+
+  const handleYouTubeStateChange = useCallback((state: number) => {
+    if (state === 1) {
+      setIsPlaying(true)
+    } else if (state === 0) {
+      setIsPlaying(false)
+      if (repeatModeRef.current === "one" && currentTrack?.youtubeVideoId) {
+        youtubePlayerRef.current?.seekTo(0, true)
+        youtubePlayerRef.current?.playVideo()
+      } else {
+        nextTrackRef.current()
+      }
+    } else if (state === 2 || state === 5 || state === -1) {
+      setIsPlaying(false)
+    }
+  }, [currentTrack])
 
   // Prefer a full-length Audius stream; Spotify's catalog API only provides previews.
   const playTrack = useCallback(
@@ -188,13 +238,15 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       let audioUrl = ""
       let playbackSource: Song["playbackSource"] = "unavailable"
+      let youtubeVideoId = song.playbackSource === "youtube" ? song.youtubeVideoId : undefined
+      if (youtubeVideoId) playbackSource = "youtube"
 
-      if ((song.playbackSource === "audius" || song.playbackSource === "freetouse" || song.playbackSource === "jamendo") && song.audioUrl) {
+      if (!youtubeVideoId && (song.playbackSource === "audius" || song.playbackSource === "freetouse" || song.playbackSource === "jamendo") && song.audioUrl) {
         audioUrl = song.audioUrl
         playbackSource = song.playbackSource
       }
 
-      if (!audioUrl) {
+      if (!audioUrl && !youtubeVideoId) {
         try {
           audioUrl = await findAudiusTrackStream(song.title, song.artist, song.duration, request.signal) || ""
           if (audioUrl) playbackSource = "audius"
@@ -206,7 +258,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (request.signal.aborted || playbackRequestRef.current !== request) return
 
-      if (!audioUrl) {
+      if (!audioUrl && !youtubeVideoId) {
         try {
           audioUrl = await findFreeToUseStream(song.title, song.artist, song.duration, request.signal) || ""
           if (audioUrl) playbackSource = "freetouse"
@@ -218,7 +270,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (request.signal.aborted || playbackRequestRef.current !== request) return
 
-      if (!audioUrl) {
+      if (!audioUrl && !youtubeVideoId) {
         try {
           audioUrl = await findJamendoTrackStream(song.title, song.artist, song.duration, request.signal) || ""
           if (audioUrl) playbackSource = "jamendo"
@@ -230,18 +282,37 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (request.signal.aborted || playbackRequestRef.current !== request) return
 
+      if (!audioUrl && !youtubeVideoId) {
+        try {
+          youtubeVideoId = await findYouTubeVideo(song, request.signal) || undefined
+          if (youtubeVideoId) playbackSource = "youtube"
+        } catch (e) {
+          if (request.signal.aborted) return
+          console.info("YouTube video lookup failed.", e)
+        }
+      }
+
+      if (request.signal.aborted || playbackRequestRef.current !== request) return
+
       const updatedSong: Song = {
         ...song,
         audioUrl,
         playbackSource,
+        youtubeVideoId,
       }
 
       setCurrentTrack(updatedSong)
       setDuration(0)
       setCurrentTime(0)
 
-      if (!audioUrl) {
+      if (!audioUrl && !youtubeVideoId) {
         console.info("No full-track match is available from Audius or Free To Use.")
+        return
+      }
+
+      if (youtubeVideoId) {
+        // The right-side YouTube iframe is the audio/video source for this song.
+        // Player controls in the bottom bar control that same iframe.
         return
       }
 
@@ -264,8 +335,27 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   )
 
   const togglePlay = useCallback(() => {
-    if (!audioRef.current || !currentTrack) return
+    if (!currentTrack) return
     if (currentTrack.playbackSource === "unavailable") return
+
+    if (currentTrack.playbackSource === "youtube") {
+      const player = youtubePlayerRef.current
+      if (!player) return
+      if (isPlaying) {
+        player.pauseVideo()
+        setIsPlaying(false)
+      } else {
+        if (player.getDuration() > 0 && player.getCurrentTime() >= player.getDuration()) {
+          player.seekTo(0, true)
+          setCurrentTime(0)
+        }
+        player.playVideo()
+        setIsPlaying(true)
+      }
+      return
+    }
+
+    if (!audioRef.current) return
 
     if (isPlaying) {
       audioRef.current.pause()
@@ -292,17 +382,27 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [isPlaying, currentTrack])
 
   const pause = useCallback(() => {
+    if (currentTrack?.playbackSource === "youtube") {
+      youtubePlayerRef.current?.pauseVideo()
+      setIsPlaying(false)
+      return
+    }
     if (audioRef.current) {
       audioRef.current.pause()
       setIsPlaying(false)
     }
-  }, [])
+  }, [currentTrack])
 
   const resume = useCallback(() => {
+    if (currentTrack?.playbackSource === "youtube") {
+      youtubePlayerRef.current?.playVideo()
+      setIsPlaying(true)
+      return
+    }
     if (audioRef.current) {
       audioRef.current.play().then(() => setIsPlaying(true)).catch(console.warn)
     }
-  }, [])
+  }, [currentTrack])
 
   const nextTrack = useCallback(() => {
     const q = queueRef.current
@@ -330,6 +430,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   nextTrackRef.current = nextTrack
 
   const prevTrack = useCallback(() => {
+    if (currentTrack?.playbackSource === "youtube" && youtubePlayerRef.current && currentTime > 3) {
+      setCurrentTime(0)
+      youtubePlayerRef.current.seekTo(0, true)
+      return
+    }
+
     if (audioRef.current && audioRef.current.currentTime > 3) {
       setCurrentTime(0)
       audioRef.current.currentTime = 0
@@ -347,10 +453,16 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setCurrentTime(0)
       audioRef.current.currentTime = 0
     }
-  }, [history, currentTrack, playTrack])
+  }, [history, currentTrack, currentTime, playTrack])
 
   const seekTo = useCallback(
     (seconds: number) => {
+      if (currentTrack?.playbackSource === "youtube" && youtubePlayerRef.current) {
+        const targetTime = Math.max(0, Math.min(seconds, duration || seconds))
+        youtubePlayerRef.current.seekTo(targetTime, true)
+        setCurrentTime(targetTime)
+        return
+      }
       if (audioRef.current && audioRef.current.duration) {
         const targetTime = Math.max(0, Math.min(seconds, audioRef.current.duration))
         audioRef.current.currentTime = targetTime
@@ -360,7 +472,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       }
     },
-    [isPlaying]
+    [isPlaying, currentTrack, duration]
   )
 
   const setVolume = useCallback(
@@ -459,6 +571,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         likedSongs,
         isRightSidebarOpen,
         isQueueOpen,
+        registerYouTubePlayer,
+        updateYouTubeTime,
+        handleYouTubeStateChange,
         playTrack,
         togglePlay,
         pause,

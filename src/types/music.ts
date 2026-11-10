@@ -8,8 +8,9 @@ export interface Song {
   duration: number // in seconds
   coverUrl: string
   audioUrl: string
-  playbackSource?: "audius" | "freetouse" | "jamendo" | "unavailable"
+  playbackSource?: "audius" | "freetouse" | "jamendo" | "youtube" | "unavailable"
   sourceUrl?: string
+  youtubeVideoId?: string
   plays?: number
   isLiked?: boolean
   explicit?: boolean
