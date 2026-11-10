@@ -159,7 +159,7 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
               {displayArtist.name}
             </h4>
             <p className="text-xs text-spotify-subdued mt-1 font-semibold">
-              {formatNumber(displayArtist.monthlyListeners)} người nghe hàng tháng
+              {formatNumber(displayArtist.followers)} người theo dõi
             </p>
             <p className="text-xs text-neutral-300 mt-3 line-clamp-3 leading-relaxed">
               {displayArtist.bio}

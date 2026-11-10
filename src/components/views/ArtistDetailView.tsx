@@ -140,7 +140,7 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
           </h1>
 
           <p className="text-sm font-medium text-white/90 drop-shadow">
-            {formatNumber(artist.monthlyListeners)} người nghe hàng tháng
+            {formatNumber(artist.followers)} người theo dõi
           </p>
         </div>
       </div>
@@ -213,7 +213,7 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
                 key={album.id}
                 id={album.id}
                 title={album.title}
-                subtitle={`${album.releaseYear} • Album`}
+                subtitle={`${album.releaseYear ? `${album.releaseYear} • ` : ""}Album`}
                 imageUrl={album.coverUrl}
                 type="album"
                 songs={album.songs}
@@ -242,7 +242,7 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
                 {artist.name}
               </span>
               <p className="text-sm font-semibold text-spotify-green">
-                {formatNumber(artist.monthlyListeners)} người nghe hàng tháng
+                {formatNumber(artist.followers)} người theo dõi
               </p>
               <p className="text-sm text-neutral-300 leading-relaxed">
                 {artist.bio}

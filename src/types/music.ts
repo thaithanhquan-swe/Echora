@@ -32,7 +32,7 @@ export interface Artist {
   name: string
   avatarUrl: string
   bannerUrl: string
-  monthlyListeners: number
+  followers: number
   verified: boolean
   bio: string
   topSongs: Song[]

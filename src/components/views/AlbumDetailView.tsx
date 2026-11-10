@@ -114,8 +114,12 @@ export const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({
             >
               {album.artist}
             </span>
-            <span>•</span>
-            <span>{album.releaseYear}</span>
+            {album.releaseYear > 0 && (
+              <>
+                <span>•</span>
+                <span>{album.releaseYear}</span>
+              </>
+            )}
             <span>•</span>
             <span>{album.songs.length} bài hát,</span>
             <span className="text-neutral-300">khoảng {totalMinutes} phút</span>

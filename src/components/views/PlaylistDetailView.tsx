@@ -114,7 +114,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
             <span>•</span>
             {playlist.followers && (
               <>
-                <span>{playlist.followers.toLocaleString()} lượt lưu</span>
+                <span>{playlist.followers.toLocaleString()} người theo dõi</span>
                 <span>•</span>
               </>
             )}
