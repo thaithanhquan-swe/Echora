@@ -66,26 +66,27 @@ const CATEGORIES: CategoryItem[] = [
 export const CategoryGrid: React.FC<CategoryGridProps> = ({ onNavigate }) => {
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white tracking-tight mb-5">
+      <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-5">
         Duyệt tìm tất cả
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 sm:gap-6">
         {CATEGORIES.map((cat) => (
           <div
             key={cat.id}
             onClick={() => onNavigate("search", cat.title)}
             style={{ backgroundColor: cat.color }}
-            className="relative h-44 rounded-lg p-4 overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-200 select-none shadow-md group"
+            className="relative h-44 sm:h-52 rounded-xl p-4 sm:p-5 overflow-hidden cursor-pointer hover:scale-[1.03] transition-all duration-300 select-none shadow-lg group"
           >
-            <h3 className="font-bold text-xl text-white tracking-tight break-words pr-2">
+            <h3 className="font-extrabold text-xl sm:text-2xl text-white tracking-tight break-words pr-2">
               {cat.title}
             </h3>
 
             <img
               src={cat.imageUrl}
               alt={cat.title}
-              className="absolute -bottom-2 -right-3 h-24 w-24 object-cover rounded shadow-2xl transform rotate-[25deg] group-hover:rotate-[28deg] group-hover:scale-105 transition-all duration-300"
+              loading="lazy"
+              className="absolute -bottom-2 -right-3 h-24 w-24 sm:h-28 sm:w-28 object-cover rounded shadow-2xl transform rotate-[25deg] group-hover:rotate-[28deg] group-hover:scale-110 transition-all duration-300"
             />
           </div>
         ))}

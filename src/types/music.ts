@@ -77,6 +77,7 @@ export type ViewType =
   | 'album'
   | 'artist'
   | 'liked-songs'
+  | 'library'
 
 export interface NavigationState {
   view: ViewType

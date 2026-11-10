@@ -42,7 +42,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
         if (!isMounted) return
         console.error("Error fetching playlist:", err)
         setError(
-          `Không tải được playlist YouTube${err instanceof Error ? `: ${err.message}` : "."}`
+          `Không tải được danh sách phát Echora${err instanceof Error ? `: ${err.message}` : "."}`
         )
       })
       .finally(() => {

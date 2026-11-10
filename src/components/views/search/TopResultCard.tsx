@@ -21,28 +21,29 @@ export const TopResultCard: React.FC<TopResultCardProps> = ({
 }) => {
   return (
     <div className="lg:col-span-5 flex flex-col select-none">
-      <h3 className="text-xl font-bold text-white mb-3 tracking-tight">
+      <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 tracking-tight">
         Kết quả hàng đầu
       </h3>
 
       <div
         onClick={() => onPlaySong(topResult, allMatchingSongs)}
-        className="flex-1 bg-neutral-900/80 hover:bg-neutral-800 p-5 rounded-xl transition-all duration-300 group cursor-pointer flex flex-col justify-between relative shadow-lg"
+        className="flex-1 bg-[#181818] hover:bg-[#282828] p-5 sm:p-6 rounded-xl transition-all duration-300 group cursor-pointer flex flex-col justify-between relative shadow-xl"
       >
         <div>
           <img
             src={topResult.coverUrl}
             alt={topResult.title}
-            className="h-24 w-24 rounded-md object-cover shadow-xl mb-4"
+            loading="lazy"
+            className="h-28 w-28 sm:h-32 sm:w-32 rounded-md object-cover shadow-2xl mb-4"
           />
-          <h4 className="text-2xl font-bold text-white truncate mb-1 tracking-tight">
+          <h4 className="text-2xl sm:text-3xl font-extrabold text-white truncate mb-1 tracking-tight">
             {topResult.title}
           </h4>
-          <p className="text-sm text-spotify-subdued">
-            <span className="font-medium text-white">{topResult.artist}</span>
+          <p className="text-sm sm:text-base text-spotify-subdued">
+            <span className="font-semibold text-white">{topResult.artist}</span>
             <span className="mx-2">•</span>
-            <span className="bg-neutral-800 text-neutral-300 text-xs px-2 py-0.5 rounded-full font-semibold">
-              Bài hát
+            <span className="bg-neutral-800 text-white text-xs px-2.5 py-1 rounded-full font-bold">
+              Bài hát Echora
             </span>
           </p>
         </div>
@@ -58,16 +59,17 @@ export const TopResultCard: React.FC<TopResultCardProps> = ({
                 onPlaySong(topResult, allMatchingSongs)
               }
             }}
-            className={`h-12 w-12 rounded-full bg-spotify-green text-black flex items-center justify-center shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none ${
+            className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-spotify-green text-black flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-108 active:scale-95 focus:outline-none ${
               isPlaying
                 ? "opacity-100"
                 : "opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0"
             }`}
+            title={isPlaying ? "Tạm dừng" : "Phát"}
           >
             {isPlaying ? (
-              <Pause className="h-5 w-5 fill-black text-black" />
+              <Pause className="h-6 w-6 fill-black text-black" />
             ) : (
-              <Play className="h-5 w-5 fill-black text-black ml-0.5" />
+              <Play className="h-6 w-6 fill-black text-black ml-0.5" />
             )}
           </button>
         </div>

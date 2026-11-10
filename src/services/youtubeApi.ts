@@ -16,7 +16,7 @@ type Video = { id?: string; snippet?: Snippet; contentDetails?: { duration?: str
 type SearchItem = { id?: { videoId?: string; channelId?: string; playlistId?: string }; snippet?: Snippet }
 
 function apiKey() {
-  if (!API_KEY) throw new Error("Thiếu VITE_YOUTUBE_API_KEY. Hãy thêm API key YouTube Data API v3 trong môi trường Vercel.")
+  if (!API_KEY) throw new Error("Thiếu VITE_YOUTUBE_API_KEY. Hãy thêm API key trong cấu hình môi trường.")
   return API_KEY
 }
 
@@ -30,8 +30,8 @@ async function request<T>(endpoint: string, params: Record<string, string>, sign
   if (!response.ok) {
     const reason = data?.error?.errors?.[0]?.reason
     const message = reason === "quotaExceeded" || reason === "dailyLimitExceeded"
-      ? "YouTube Data API đã hết quota hôm nay."
-      : data?.error?.message || `YouTube Data API lỗi (${response.status}).`
+      ? "Hệ thống âm nhạc Echora đã đạt hạn mức hôm nay."
+      : data?.error?.message || `Hệ thống Echora gặp lỗi (${response.status}).`
     throw new Error(message)
   }
   responseCache.set(cacheKey, { expiresAt: Date.now() + 5 * 60_000, value: data })
@@ -55,10 +55,10 @@ function toSong(video: Video): Song | null {
   if (!id || !snippet) return null
   return {
     id: `youtube:${id}`,
-    title: snippet.title || "Video không có tiêu đề",
-    artist: snippet.channelTitle || "YouTube",
+    title: snippet.title || "Bài hát không có tiêu đề",
+    artist: snippet.channelTitle || "Echora",
     artistId: snippet.channelId || "",
-    album: "YouTube",
+    album: "Echora",
     albumId: "",
     duration: durationSeconds(video.contentDetails?.duration),
     coverUrl: thumbnail(snippet),
@@ -120,7 +120,7 @@ export async function searchYouTubeChannels(query: string, limit = 12, signal?: 
     const snippet = item.snippet
     if (!id || !snippet) return []
     const image = thumbnail(snippet)
-    return [{ id, name: snippet.channelTitle || snippet.title || "YouTube channel", avatarUrl: image, bannerUrl: image, followers: 0, verified: false, bio: snippet.description || "Kênh YouTube", topSongs: [], albums: [] }]
+    return [{ id, name: snippet.channelTitle || snippet.title || "Kênh Echora", avatarUrl: image, bannerUrl: image, followers: 0, verified: false, bio: snippet.description || "Kênh nghệ sĩ Echora", topSongs: [], albums: [] }]
   })
 }
 
@@ -130,7 +130,7 @@ export async function searchYouTubePlaylists(query: string, limit = 12, signal?:
     const id = item.id?.playlistId
     const snippet = item.snippet
     if (!id || !snippet) return []
-    return [{ id, title: snippet.title || "YouTube playlist", description: snippet.description || "Playlist công khai trên YouTube", coverUrl: thumbnail(snippet), owner: snippet.channelTitle || "YouTube", songs: [] }]
+    return [{ id, title: snippet.title || "Danh sách phát Echora", description: snippet.description || "Danh sách phát trên Echora", coverUrl: thumbnail(snippet), owner: snippet.channelTitle || "Echora", songs: [] }]
   })
 }
 
@@ -140,15 +140,15 @@ export async function getYouTubePlaylist(id: string, signal?: AbortSignal): Prom
     request<{ items?: Array<{ contentDetails?: { videoId?: string } }> }>("playlistItems", { part: "contentDetails", playlistId: id, maxResults: "50" }, signal),
   ])
   const data = playlistData.items?.[0]
-  if (!data?.snippet) throw new Error("Không tìm thấy playlist YouTube công khai.")
+  if (!data?.snippet) throw new Error("Không tìm thấy danh sách phát Echora.")
   const ids = (itemsData.items || []).map((item) => item.contentDetails?.videoId || "").filter(Boolean)
-  return { id, title: data.snippet.title || "YouTube playlist", description: data.snippet.description || "Playlist công khai trên YouTube", coverUrl: thumbnail(data.snippet), owner: data.snippet.channelTitle || "YouTube", songs: await getVideos(ids, signal) }
+  return { id, title: data.snippet.title || "Danh sách phát Echora", description: data.snippet.description || "Danh sách phát trên Echora", coverUrl: thumbnail(data.snippet), owner: data.snippet.channelTitle || "Echora", songs: await getVideos(ids, signal) }
 }
 
 export async function getYouTubeChannel(id: string, signal?: AbortSignal): Promise<Artist> {
   const result = await request<{ items?: Array<{ snippet?: Snippet; statistics?: { subscriberCount?: string }; contentDetails?: { relatedPlaylists?: { uploads?: string } } }> }>("channels", { part: "snippet,statistics,contentDetails", id }, signal)
   const channel = result.items?.[0]
-  if (!channel?.snippet) throw new Error("Không tìm thấy kênh YouTube.")
+  if (!channel?.snippet) throw new Error("Không tìm thấy kênh nghệ sĩ Echora.")
   const uploadsId = channel.contentDetails?.relatedPlaylists?.uploads
   let topSongs: Song[] = []
   if (uploadsId) {
@@ -156,5 +156,5 @@ export async function getYouTubeChannel(id: string, signal?: AbortSignal): Promi
     topSongs = await getVideos((uploads.items || []).map((item) => item.contentDetails?.videoId || "").filter(Boolean), signal)
   }
   const image = thumbnail(channel.snippet)
-  return { id, name: channel.snippet.title || "YouTube channel", avatarUrl: image, bannerUrl: image, followers: Number(channel.statistics?.subscriberCount || 0), verified: false, bio: channel.snippet.description || "Kênh YouTube", topSongs, albums: [] }
+  return { id, name: channel.snippet.title || "Kênh Echora", avatarUrl: image, bannerUrl: image, followers: Number(channel.statistics?.subscriberCount || 0), verified: false, bio: channel.snippet.description || "Kênh nghệ sĩ Echora", topSongs, albums: [] }
 }
