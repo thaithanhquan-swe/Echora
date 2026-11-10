@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react"
 import { Play, Pause, CheckCircle2, MoreHorizontal, Loader2 } from "lucide-react"
-import { Artist, ViewType, Song, Album } from "@/types/music"
+import { Artist, ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { TrackRow } from "@/components/common/TrackRow"
 import { Button } from "@/components/ui/button"
 import { MediaCard } from "@/components/common/MediaCard"
 import { formatNumber } from "@/lib/utils"
-import {
-  spotifyApi,
-  mapApiArtistToArtist,
-  mapApiTrackToSong,
-  mapApiAlbumToAlbum,
-} from "@/services/spotifyApi"
+import { getYouTubeChannel } from "@/services/youtubeApi"
 
 interface ArtistDetailViewProps {
   artist?: Artist
@@ -39,39 +34,15 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
     setLoading(true)
     setError(null)
 
-    Promise.all([
-      spotifyApi.getArtist(targetId).catch(() => null),
-      spotifyApi.getArtistTopTracks(targetId).catch(() => null),
-      spotifyApi.getArtistAlbums(targetId, "all", 8).catch(() => null),
-    ])
-      .then(([artistRes, topTracksRes, albumsRes]) => {
+    getYouTubeChannel(targetId)
+      .then((mappedArtist) => {
         if (!isMounted) return
-
-        if (!artistRes?.success || !artistRes.artist) {
-          setError("Không thể tải thông tin nghệ sĩ.")
-          return
-        }
-
-        const topSongs: Song[] = (topTracksRes?.tracks || []).map((t) =>
-          mapApiTrackToSong(t)
-        )
-
-        const albums: Album[] = (albumsRes?.albums || []).map((a) =>
-          mapApiAlbumToAlbum(a)
-        )
-
-        const mappedArtist = mapApiArtistToArtist(
-          artistRes.artist,
-          topSongs,
-          albums
-        )
-
         setArtist(mappedArtist)
       })
       .catch((err) => {
         if (!isMounted) return
         console.error("Error fetching artist details:", err)
-        setError("Lỗi kết nối tới máy chủ Echora.")
+        setError(err instanceof Error ? err.message : "Không tải được kênh YouTube.")
       })
       .finally(() => {
         if (isMounted) setLoading(false)

@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react"
+import React from "react"
 import { PlusCircle, MoreHorizontal } from "lucide-react"
 import { Song, Artist, ViewType } from "@/types/music"
 import { formatNumber } from "@/lib/utils"
-import { spotifyApi, mapApiArtistToArtist } from "@/services/spotifyApi"
 
 interface NowPlayingViewProps {
   currentTrack: Song
@@ -27,28 +26,7 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
   onNavigate,
   hideMedia = false,
 }) => {
-  const [artistDetails, setArtistDetails] = useState<Artist | null>(propArtist || null)
-
-  useEffect(() => {
-    let isMounted = true
-    if (currentTrack.artistId) {
-      spotifyApi
-        .getArtist(currentTrack.artistId)
-        .then((res) => {
-          if (isMounted && res.success && res.artist) {
-            setArtistDetails(mapApiArtistToArtist(res.artist))
-          }
-        })
-        .catch(() => {})
-    } else {
-      setArtistDetails(null)
-    }
-    return () => {
-      isMounted = false
-    }
-  }, [currentTrack.artistId])
-
-  const displayArtist = artistDetails || propArtist
+  const displayArtist = propArtist
   const nextTrack = queue.length > 0 ? queue[0] : null
 
   return (

@@ -4,7 +4,6 @@ import { HomeView } from "@/components/views/HomeView"
 import { SearchView } from "@/components/views/SearchView"
 import { PlaylistDetailView } from "@/components/views/PlaylistDetailView"
 import { ArtistDetailView } from "@/components/views/ArtistDetailView"
-import { AlbumDetailView } from "@/components/views/AlbumDetailView"
 import { LikedSongsView } from "@/components/views/LikedSongsView"
 
 interface MainContentProps {
@@ -50,12 +49,7 @@ export const MainContent: React.FC<MainContentProps> = ({
         )
 
       case "album":
-        return (
-          <AlbumDetailView
-            albumId={selectedId}
-            onNavigate={onNavigate}
-          />
-        )
+        return <HomeView onNavigate={onNavigate} />
 
       case "liked-songs":
         return <LikedSongsView onNavigate={onNavigate} />

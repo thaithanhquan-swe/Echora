@@ -4,7 +4,7 @@ import { usePlayer } from "@/context/PlayerContext"
 import { HeroHeader } from "@/components/common/HeroHeader"
 import { ActionBar } from "@/components/common/ActionBar"
 import { TrackTable } from "@/components/common/TrackTable"
-import { spotifyApi, mapApiPlaylistToPlaylist } from "@/services/spotifyApi"
+import { getYouTubePlaylist } from "@/services/youtubeApi"
 import { Loader2 } from "lucide-react"
 
 interface PlaylistDetailViewProps {
@@ -33,25 +33,16 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
     setLoading(true)
     setError(null)
 
-    spotifyApi
-      .getPlaylist(targetId)
-      .then((res) => {
+    getYouTubePlaylist(targetId)
+      .then((mapped) => {
         if (!isMounted) return
-        if (res.success && res.playlist) {
-          const mapped = mapApiPlaylistToPlaylist(
-            res.playlist,
-            initialPlaylist?.coverUrl
-          )
-          setPlaylist(mapped)
-        } else {
-          setError("Không thể tải danh sách phát này.")
-        }
+        setPlaylist(mapped)
       })
       .catch((err) => {
         if (!isMounted) return
         console.error("Error fetching playlist:", err)
         setError(
-          `Không tải được playlist từ API catalog${err instanceof Error ? `: ${err.message}` : "."}`
+          `Không tải được playlist YouTube${err instanceof Error ? `: ${err.message}` : "."}`
         )
       })
       .finally(() => {

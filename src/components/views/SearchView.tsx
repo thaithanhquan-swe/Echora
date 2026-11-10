@@ -1,368 +1,61 @@
-import React, { useState, useEffect } from "react"
-import { ViewType, Song, Artist, Playlist, Album } from "@/types/music"
+import React, { useEffect, useState } from "react"
+import { ViewType, Song, Artist, Playlist } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { TrackRow } from "@/components/common/TrackRow"
 import { MediaCard } from "@/components/common/MediaCard"
 import { CategoryGrid } from "./search/CategoryGrid"
 import { TopResultCard } from "./search/TopResultCard"
 import { Badge } from "@/components/ui/badge"
-import {
-  spotifyApi,
-  mapApiTrackToSong,
-  mapApiArtistToArtist,
-  mapApiPlaylistToPlaylist,
-  mapApiAlbumToAlbum,
-} from "@/services/spotifyApi"
-import { searchAudiusTracks } from "@/services/audiusApi"
-import { searchFreeToUseTracks } from "@/services/freeToUseApi"
-import { searchJamendoTracks } from "@/services/jamendoApi"
+import { searchYouTubeVideos, searchYouTubeChannels, searchYouTubePlaylists } from "@/services/youtubeApi"
 import { Loader2 } from "lucide-react"
 
-interface SearchViewProps {
-  searchQuery: string
-  onNavigate: (view: ViewType, id?: string) => void
-}
+interface SearchViewProps { searchQuery: string; onNavigate: (view: ViewType, id?: string) => void }
+type SearchTab = "all" | "tracks" | "artists" | "playlists"
 
-type SearchTab = "all" | "tracks" | "artists" | "playlists" | "albums"
-
-export const SearchView: React.FC<SearchViewProps> = ({
-  searchQuery,
-  onNavigate,
-}) => {
+export const SearchView: React.FC<SearchViewProps> = ({ searchQuery, onNavigate }) => {
   const { currentTrack, isPlaying, playTrack, togglePlay } = usePlayer()
   const [activeTab, setActiveTab] = useState<SearchTab>("all")
   const [loading, setLoading] = useState(false)
-  const [searchError, setSearchError] = useState(false)
-  const [matchingSongs, setMatchingSongs] = useState<Song[]>([])
-  const [matchingPublicSongs, setMatchingPublicSongs] = useState<Song[]>([])
-  const [matchingArtists, setMatchingArtists] = useState<Artist[]>([])
-  const [matchingPlaylists, setMatchingPlaylists] = useState<Playlist[]>([])
-  const [matchingAlbums, setMatchingAlbums] = useState<Album[]>([])
-
-  const trimmedQuery = searchQuery.trim()
+  const [error, setError] = useState("")
+  const [songs, setSongs] = useState<Song[]>([])
+  const [artists, setArtists] = useState<Artist[]>([])
+  const [playlists, setPlaylists] = useState<Playlist[]>([])
+  const query = searchQuery.trim()
 
   useEffect(() => {
-    if (!trimmedQuery) {
-      setSearchError(false)
-      setMatchingSongs([])
-      setMatchingPublicSongs([])
-      setMatchingArtists([])
-      setMatchingPlaylists([])
-      setMatchingAlbums([])
-      setLoading(false)
-      return
-    }
-
-    setLoading(true)
-    setSearchError(false)
-    setMatchingPublicSongs([])
-    const timeout = setTimeout(() => {
-      const promises: Promise<any>[] = []
-
-      if (activeTab === "all" || activeTab === "tracks") {
-        promises.push(
-          Promise.all([
-            searchAudiusTracks(trimmedQuery, 10).catch(() => []),
-            searchFreeToUseTracks(trimmedQuery, 10).catch(() => []),
-            searchJamendoTracks(trimmedQuery, 10).catch(() => []),
-          ]).then(([audiusSongs, freeToUseSongs, jamendoSongs]) => {
-            const unique = new Map<string, Song>()
-            ;[...audiusSongs, ...freeToUseSongs, ...jamendoSongs].forEach((song) => unique.set(song.id, song))
-            setMatchingPublicSongs(Array.from(unique.values()))
-          })
-        )
-
-        promises.push(
-          spotifyApi
-            .search(trimmedQuery, "track", activeTab === "tracks" ? 15 : 8)
-            .then((res) => {
-              if (res?.success && Array.isArray(res.results)) {
-                setMatchingSongs(res.results.map((t) => mapApiTrackToSong(t)))
-              } else {
-                setMatchingSongs([])
-              }
-            })
-            .catch(() => {
-              setMatchingSongs([])
-              setSearchError(true)
-            })
-        )
-      }
-
-      if (activeTab === "all" || activeTab === "artists") {
-        promises.push(
-          spotifyApi
-            .search(trimmedQuery, "artist", activeTab === "artists" ? 10 : 5)
-            .then((res) => {
-              if (res?.success && Array.isArray(res.results)) {
-                setMatchingArtists(
-                  res.results.map((a) => mapApiArtistToArtist(a))
-                )
-              } else {
-                setMatchingArtists([])
-              }
-            })
-            .catch(() => {
-              setMatchingArtists([])
-              setSearchError(true)
-            })
-        )
-      }
-
-      if (activeTab === "all" || activeTab === "playlists") {
-        promises.push(
-          spotifyApi
-            .search(trimmedQuery, "playlist", activeTab === "playlists" ? 10 : 5)
-            .then((res) => {
-              if (res?.success && Array.isArray(res.results)) {
-                setMatchingPlaylists(
-                  res.results.map((p) => mapApiPlaylistToPlaylist(p))
-                )
-              } else {
-                setMatchingPlaylists([])
-              }
-            })
-            .catch(() => {
-              setMatchingPlaylists([])
-              setSearchError(true)
-            })
-        )
-      }
-
-      if (activeTab === "all" || activeTab === "albums") {
-        promises.push(
-          spotifyApi
-            .search(trimmedQuery, "album", activeTab === "albums" ? 10 : 5)
-            .then((res) => {
-              if (res?.success && Array.isArray(res.results)) {
-                setMatchingAlbums(
-                  res.results.map((a) => mapApiAlbumToAlbum(a))
-                )
-              } else {
-                setMatchingAlbums([])
-              }
-            })
-            .catch(() => {
-              setMatchingAlbums([])
-              setSearchError(true)
-            })
-        )
-      }
-
-      Promise.all(promises).finally(() => {
-        setLoading(false)
-      })
+    if (!query) { setSongs([]); setArtists([]); setPlaylists([]); setError(""); setLoading(false); return }
+    const controller = new AbortController()
+    setLoading(true); setError("")
+    const timer = window.setTimeout(async () => {
+      try {
+        const [videoResults, channelResults, playlistResults] = await Promise.all([
+          activeTab === "all" || activeTab === "tracks" ? searchYouTubeVideos(query, activeTab === "tracks" ? 20 : 8, controller.signal) : Promise.resolve([]),
+          activeTab === "all" || activeTab === "artists" ? searchYouTubeChannels(query, 8, controller.signal) : Promise.resolve([]),
+          activeTab === "all" || activeTab === "playlists" ? searchYouTubePlaylists(query, 8, controller.signal) : Promise.resolve([]),
+        ])
+        if (controller.signal.aborted) return
+        setSongs(videoResults); setArtists(channelResults); setPlaylists(playlistResults)
+      } catch (err) {
+        if (!controller.signal.aborted) { setError(err instanceof Error ? err.message : "Không thể tìm kiếm trên YouTube."); setSongs([]); setArtists([]); setPlaylists([]) }
+      } finally { if (!controller.signal.aborted) setLoading(false) }
     }, 400)
+    return () => { window.clearTimeout(timer); controller.abort() }
+  }, [query, activeTab])
 
-    return () => clearTimeout(timeout)
-  }, [trimmedQuery, activeTab])
-
-  const topResult: Song | null = matchingSongs.length > 0 ? matchingSongs[0] : null
-  const isTopResultPlaying = Boolean(
-    topResult && currentTrack?.id === topResult.id && isPlaying
-  )
-
-  const hasAnyResults =
-    matchingSongs.length > 0 ||
-    matchingPublicSongs.length > 0 ||
-    matchingArtists.length > 0 ||
-    matchingPlaylists.length > 0 ||
-    matchingAlbums.length > 0
-
-  return (
-    <div className="p-6 space-y-6 animate-in fade-in duration-300 select-none">
-      {!trimmedQuery ? (
-        /* Empty Query: Browse All Categories Grid */
-        <CategoryGrid onNavigate={onNavigate} />
-      ) : (
-        /* Active Search Results */
-        <div className="space-y-6">
-          {/* Filter Tabs matching available API endpoints */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-            <Badge
-              variant={activeTab === "all" ? "active" : "default"}
-              onClick={() => setActiveTab("all")}
-              className="cursor-pointer py-1.5 px-4 text-xs font-bold shrink-0"
-            >
-              Tất cả
-            </Badge>
-            <Badge
-              variant={activeTab === "tracks" ? "active" : "default"}
-              onClick={() => setActiveTab("tracks")}
-              className="cursor-pointer py-1.5 px-4 text-xs font-bold shrink-0"
-            >
-              Bài hát
-            </Badge>
-            <Badge
-              variant={activeTab === "artists" ? "active" : "default"}
-              onClick={() => setActiveTab("artists")}
-              className="cursor-pointer py-1.5 px-4 text-xs font-bold shrink-0"
-            >
-              Nghệ sĩ
-            </Badge>
-            <Badge
-              variant={activeTab === "playlists" ? "active" : "default"}
-              onClick={() => setActiveTab("playlists")}
-              className="cursor-pointer py-1.5 px-4 text-xs font-bold shrink-0"
-            >
-              Danh sách phát
-            </Badge>
-            <Badge
-              variant={activeTab === "albums" ? "active" : "default"}
-              onClick={() => setActiveTab("albums")}
-              className="cursor-pointer py-1.5 px-4 text-xs font-bold shrink-0"
-            >
-              Album
-            </Badge>
-          </div>
-
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 text-spotify-subdued">
-              <Loader2 className="h-8 w-8 animate-spin text-spotify-green mb-3" />
-              <p className="text-sm font-semibold text-white">Đang tìm kiếm trên Echora...</p>
-            </div>
-          ) : !hasAnyResults && searchError ? (
-            <div className="text-center py-20 text-spotify-subdued">
-              <p className="text-lg font-semibold text-white">
-                Không thể kết nối đến danh mục Spotify.
-              </p>
-              <p className="text-sm mt-2">Vui lòng thử lại sau.</p>
-            </div>
-          ) : !hasAnyResults ? (
-            <div className="text-center py-20 text-spotify-subdued">
-              <p className="text-lg font-semibold text-white">
-                Không tìm thấy kết quả nào cho "{searchQuery}"
-              </p>
-              <p className="text-sm mt-2">
-                Hãy thử kiểm tra lại chính tả hoặc tìm theo tên bài hát, nghệ sĩ khác.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {(activeTab === "all" || activeTab === "tracks") && matchingPublicSongs.length > 0 && (
-                <section>
-                  <p className="mb-1 text-xs font-medium text-spotify-subdued">
-                    Public audio · stream trọn bài ngay trong Echora
-                  </p>
-                  <h3 className="mb-3 text-xl font-bold tracking-tight text-white">
-                    Bản đầy đủ có thể phát
-                  </h3>
-                  <div className="space-y-1">
-                    {matchingPublicSongs.map((song, index) => (
-                      <TrackRow
-                        key={song.id}
-                        song={song}
-                        index={index}
-                        contextSongs={matchingPublicSongs}
-                        showAlbum={false}
-                        showDateAdded={false}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* All or Tracks: Top Result & Songs List */}
-              {(activeTab === "all" || activeTab === "tracks") && matchingSongs.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  {/* Top Result Card */}
-                  {topResult && (
-                    <TopResultCard
-                      topResult={topResult}
-                      isCurrent={currentTrack?.id === topResult.id}
-                      isPlaying={isTopResultPlaying}
-                      allMatchingSongs={matchingSongs}
-                      onPlaySong={playTrack}
-                      onTogglePlay={togglePlay}
-                    />
-                  )}
-
-                  {/* Matching Songs list */}
-                  <div className={`${topResult ? "lg:col-span-7" : "col-span-12"}`}>
-                    <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Bài hát</h3>
-                    <div className="space-y-1">
-                      {matchingSongs.slice(0, activeTab === "tracks" ? 15 : 4).map((song, idx) => (
-                        <TrackRow
-                          key={song.id}
-                          song={song}
-                          index={idx}
-                          contextSongs={matchingSongs}
-                          showAlbum={true}
-                          showDateAdded={false}
-                          onNavigate={onNavigate}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Artists Matching */}
-              {(activeTab === "all" || activeTab === "artists") && matchingArtists.length > 0 && (
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-4 tracking-tight">Nghệ sĩ</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {matchingArtists.map((artist) => (
-                      <MediaCard
-                        key={artist.id}
-                        id={artist.id}
-                        title={artist.name}
-                        subtitle="Nghệ sĩ"
-                        imageUrl={artist.avatarUrl}
-                        type="artist"
-                        songs={artist.topSongs}
-                        onClick={() => onNavigate("artist", artist.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Playlists Matching */}
-              {(activeTab === "all" || activeTab === "playlists") && matchingPlaylists.length > 0 && (
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-4 tracking-tight">Danh sách phát</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {matchingPlaylists.map((pl) => (
-                      <MediaCard
-                        key={pl.id}
-                        id={pl.id}
-                        title={pl.title}
-                        subtitle={`Bởi ${pl.owner}`}
-                        imageUrl={pl.coverUrl}
-                        type="playlist"
-                        songs={pl.songs}
-                        onClick={() => onNavigate("playlist", pl.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Albums Matching */}
-              {(activeTab === "all" || activeTab === "albums") && matchingAlbums.length > 0 && (
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-4 tracking-tight">Album</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {matchingAlbums.map((album) => (
-                      <MediaCard
-                        key={album.id}
-                        id={album.id}
-                        title={album.title}
-                        subtitle={`${album.releaseYear ? `${album.releaseYear} • ` : ""}${album.artist}`}
-                        imageUrl={album.coverUrl}
-                        type="album"
-                        songs={album.songs}
-                        onClick={() => onNavigate("album", album.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
+  const topResult = songs[0] || null
+  const any = songs.length + artists.length + playlists.length > 0
+  const tabs: Array<[SearchTab, string]> = [["all", "Tất cả"], ["tracks", "Video âm nhạc"], ["artists", "Kênh nghệ sĩ"], ["playlists", "Danh sách phát"]]
+  return <div className="p-6 space-y-6 animate-in fade-in duration-300 select-none">
+    {!query ? <CategoryGrid onNavigate={onNavigate} /> : <div className="space-y-6">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">{tabs.map(([tab, title]) => <Badge key={tab} variant={activeTab === tab ? "active" : "default"} onClick={() => setActiveTab(tab)} className="cursor-pointer py-1.5 px-4 text-xs font-bold shrink-0">{title}</Badge>)}</div>
+      {loading ? <div className="flex flex-col items-center justify-center py-24 text-spotify-subdued"><Loader2 className="h-8 w-8 animate-spin text-spotify-green mb-3"/><p className="text-sm font-semibold text-white">Đang tìm video trên YouTube...</p></div>
+        : error ? <div className="text-center py-20"><p className="text-lg font-semibold text-white">Không thể tải dữ liệu YouTube</p><p className="text-sm mt-2 text-spotify-subdued">{error}</p></div>
+        : !any ? <div className="text-center py-20 text-spotify-subdued"><p className="text-lg font-semibold text-white">Không tìm thấy kết quả cho “{query}”</p><p className="text-sm mt-2">Thử tên bài hát, nghệ sĩ hoặc playlist khác.</p></div>
+        : <div className="space-y-8">
+          {(activeTab === "all" || activeTab === "tracks") && songs.length > 0 && <section><p className="mb-1 text-xs text-spotify-subdued">Video công khai từ YouTube · phát trong khung video bên phải</p><div className="grid grid-cols-1 lg:grid-cols-12 gap-6">{topResult && <TopResultCard topResult={topResult} isCurrent={currentTrack?.id === topResult.id} isPlaying={Boolean(currentTrack?.id === topResult.id && isPlaying)} allMatchingSongs={songs} onPlaySong={playTrack} onTogglePlay={togglePlay}/>}<div className={`${topResult ? "lg:col-span-7" : "col-span-12"}`}><h3 className="text-xl font-bold text-white mb-3">Video âm nhạc</h3><div className="space-y-1">{songs.slice(0, activeTab === "tracks" ? 20 : 5).map((song, i) => <TrackRow key={song.id} song={song} index={i} contextSongs={songs} showAlbum={false} showDateAdded={false} onNavigate={onNavigate}/>)}</div></div></div></section>}
+          {(activeTab === "all" || activeTab === "artists") && artists.length > 0 && <section><h3 className="text-xl font-bold text-white mb-4">Kênh nghệ sĩ</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">{artists.map((a) => <MediaCard key={a.id} id={a.id} title={a.name} subtitle="Kênh YouTube" imageUrl={a.avatarUrl} type="artist" songs={a.topSongs} onClick={() => onNavigate("artist", a.id)}/>)}</div></section>}
+          {(activeTab === "all" || activeTab === "playlists") && playlists.length > 0 && <section><h3 className="text-xl font-bold text-white mb-4">Danh sách phát YouTube</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">{playlists.map((p) => <MediaCard key={p.id} id={p.id} title={p.title} subtitle={`Bởi ${p.owner}`} imageUrl={p.coverUrl} type="playlist" songs={p.songs} onClick={() => onNavigate("playlist", p.id)}/>)}</div></section>}
+        </div>}
+    </div>}
+  </div>
 }

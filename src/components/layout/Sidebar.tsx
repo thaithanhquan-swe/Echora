@@ -6,7 +6,7 @@ import { LibraryHeader } from "@/components/sidebar/LibraryHeader"
 import { LibraryFilterChips, LibraryFilterType } from "@/components/sidebar/LibraryFilterChips"
 import { LibrarySearchSort } from "@/components/sidebar/LibrarySearchSort"
 import { LibraryItem } from "@/components/sidebar/LibraryItem"
-import { spotifyApi, mapApiPlaylistToPlaylist } from "@/services/spotifyApi"
+import { searchYouTubePlaylists } from "@/services/youtubeApi"
 
 interface SidebarProps {
   currentView: ViewType
@@ -30,11 +30,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   useEffect(() => {
     let isMounted = true
-    spotifyApi
-      .getTrendingPlaylists(12)
+    searchYouTubePlaylists("nhạc Việt", 12)
       .then((res) => {
         if (!isMounted) return
-        setPlaylists(res.map((playlist) => mapApiPlaylistToPlaylist(playlist)))
+        setPlaylists(res)
       })
       .catch(() => {})
 
@@ -44,8 +43,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [])
 
   const filteredItems = playlists.filter((p) => {
-    if (filter === "albums" && !p.description.toLowerCase().includes("album")) return false
-    if (filter === "artists" && !p.description.toLowerCase().includes("artist")) return false
     if (!searchLibrary) return true
     return (
       p.title.toLowerCase().includes(searchLibrary.toLowerCase()) ||
@@ -103,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => onNavigate("liked-songs")}
         />
 
-        {/* Playlist / Album items */}
+        {/* YouTube playlists */}
         {filteredItems.map((item) => {
           const isSelected =
             (currentView === "playlist" || currentView === "album") &&
@@ -111,7 +108,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const hasActiveTrack =
             currentTrack?.albumId === item.id ||
             item.songs.some((s) => s.id === currentTrack?.id)
-          const isAlbum = item.description.toLowerCase().includes("album")
 
           return (
             <LibraryItem
@@ -126,11 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               isSelected={isSelected}
               isCollapsed={isCollapsed}
               onClick={() => {
-                if (isAlbum) {
-                  onNavigate("album", item.id)
-                } else {
-                  onNavigate("playlist", item.id)
-                }
+                onNavigate("playlist", item.id)
               }}
             />
           )
