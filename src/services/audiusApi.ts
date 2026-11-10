@@ -34,7 +34,7 @@ function matchesSong(track: AudiusTrack, title: string, artist: string, duration
   const expectedArtists = splitArtists(artist)
   const creditedArtists = [track.user?.name, ...(track.artists || []).map((entry) =>
     typeof entry === "string" ? entry : entry.name || entry.artist_name || ""
-  )].map(normalize)
+  )].map((name) => normalize(name || ""))
   if (!expectedArtists.some((name) => creditedArtists.includes(name))) return false
 
   // Reject same-title uploads with a clearly different length (e.g. edits/live versions).
