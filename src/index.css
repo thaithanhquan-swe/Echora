@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 141 73% 48%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 141 73% 48%;
+
+    --radius: 0.5rem;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #000000;
+  color: #ffffff;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar matching Spotify */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Spotify range slider custom styling */
+.spotify-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.spotify-slider:focus {
+  outline: none;
+}
+
+/* Range track */
+.spotify-slider::-webkit-slider-runnable-track {
+  background-color: #4d4d4d;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.spotify-slider::-moz-range-track {
+  background-color: #4d4d4d;
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Range thumb */
+.spotify-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -4px;
+  background-color: #ffffff;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.group:hover .spotify-slider::-webkit-slider-thumb,
+.spotify-slider:hover::-webkit-slider-thumb,
+.spotify-slider:active::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.spotify-slider::-moz-range-thumb {
+  border: none;
+  background-color: #ffffff;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.group:hover .spotify-slider::-moz-range-thumb,
+.spotify-slider:hover::-moz-range-thumb,
+.spotify-slider:active::-moz-range-thumb {
+  opacity: 1;
+}
+
+/* Glassmorphism gradient utilities */
+.spotify-glass {
+  background: rgba(18, 18, 18, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.spotify-card {
+  background-color: #181818;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+}
+
+.spotify-card:hover {
+  background-color: #282828;
+}
+
+/* Audio wave animation */
+@keyframes wave-bounce {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 16px;
+  }
+}
+
+.animate-wave-1 {
+  animation: wave-bounce 1s ease-in-out infinite;
+}
+.animate-wave-2 {
+  animation: wave-bounce 0.8s ease-in-out 0.2s infinite;
+}
+.animate-wave-3 {
+  animation: wave-bounce 1.2s ease-in-out 0.4s infinite;
+}
+.animate-wave-4 {
+  animation: wave-bounce 0.9s ease-in-out 0.1s infinite;
+}
