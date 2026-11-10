@@ -267,6 +267,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   {topResult && (
                     <TopResultCard
                       topResult={topResult}
+                      isCurrent={currentTrack?.id === topResult.id}
                       isPlaying={isTopResultPlaying}
                       allMatchingSongs={matchingSongs}
                       onPlaySong={playTrack}

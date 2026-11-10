@@ -4,6 +4,7 @@ import { Song } from "@/types/music"
 
 interface TopResultCardProps {
   topResult: Song
+  isCurrent: boolean
   isPlaying: boolean
   allMatchingSongs: Song[]
   onPlaySong: (song: Song, queue: Song[]) => void
@@ -12,6 +13,7 @@ interface TopResultCardProps {
 
 export const TopResultCard: React.FC<TopResultCardProps> = ({
   topResult,
+  isCurrent,
   isPlaying,
   allMatchingSongs,
   onPlaySong,
@@ -50,7 +52,11 @@ export const TopResultCard: React.FC<TopResultCardProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation()
-              onTogglePlay()
+              if (isCurrent) {
+                onTogglePlay()
+              } else {
+                onPlaySong(topResult, allMatchingSongs)
+              }
             }}
             className={`h-12 w-12 rounded-full bg-spotify-green text-black flex items-center justify-center shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none ${
               isPlaying
