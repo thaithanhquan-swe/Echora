@@ -45,7 +45,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({ onNavigate }) => {
   const isLiked = likedSongIds.has(currentTrack.id)
 
   return (
-    <footer className="h-20 w-full bg-black border-t border-neutral-900 px-4 flex items-center justify-between select-none z-40">
+    <footer className="h-20 w-full bg-black border-t border-neutral-900/60 px-4 flex items-center justify-between select-none z-40">
       {/* 1. Track Info (Left) */}
       <PlayerTrackInfo
         currentTrack={currentTrack}
@@ -54,8 +54,8 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({ onNavigate }) => {
         onNavigate={onNavigate}
       />
 
-      {/* 2. Playback Controls & Progress Bar (Center) */}
-      <div className="flex flex-col items-center max-w-xl w-[40%] px-4">
+      {/* 2. Playback Controls & Progress Bar (Center) - Roomy and centered */}
+      <div className="flex flex-col items-center max-w-2xl w-[44%] px-4">
         <PlayerControls
           isPlaying={isPlaying}
           isShuffled={isShuffled}
@@ -74,7 +74,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({ onNavigate }) => {
         />
       </div>
 
-      {/* 3. Extra Controls & Volume (Right) */}
+      {/* 3. Extra Controls & Volume (Right) - Bigger icons matching Spotify */}
       <PlayerExtraControls
         isLyricsOpen={isLyricsOpen}
         isRightSidebarOpen={isRightSidebarOpen}

@@ -23,19 +23,19 @@ export const VolumeControl: React.FC<VolumeControlProps> = ({
 
   const renderVolumeIcon = () => {
     if (isMuted || volume === 0) {
-      return <VolumeX className="h-4 w-4 stroke-[2]" />
+      return <VolumeX className="h-5 w-5 stroke-[1.8]" />
     }
     if (volume < 0.5) {
-      return <Volume1 className="h-4 w-4 stroke-[2]" />
+      return <Volume1 className="h-5 w-5 stroke-[1.8]" />
     }
-    return <Volume2 className="h-4 w-4 stroke-[2]" />
+    return <Volume2 className="h-5 w-5 stroke-[1.8]" />
   }
 
   return (
-    <div className="flex items-center gap-2 w-28 group select-none">
+    <div className="flex items-center gap-2.5 w-32 group select-none">
       <button
         onClick={onToggleMute}
-        className="text-spotify-subdued hover:text-white transition-colors focus:outline-none"
+        className="text-spotify-subdued hover:text-white transition-colors focus:outline-none shrink-0"
         title={isMuted ? "Bật âm" : "Tắt âm"}
       >
         {renderVolumeIcon()}
@@ -46,7 +46,7 @@ export const VolumeControl: React.FC<VolumeControlProps> = ({
         max={100}
         step={1}
         onValueChange={handleSlider}
-        className="w-20"
+        className="w-24"
       />
     </div>
   )

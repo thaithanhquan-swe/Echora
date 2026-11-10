@@ -23,11 +23,11 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   return (
     <div
-      className="flex items-center gap-2 w-full text-[11px] font-medium text-spotify-subdued tabular-nums select-none"
+      className="flex items-center gap-2.5 w-full text-xs font-normal text-spotify-subdued tabular-nums select-none"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <span className="w-10 text-right">{formatTime(currentTime)}</span>
+      <span className="w-10 text-right font-medium">{formatTime(currentTime)}</span>
 
       <Slider
         value={[currentTime]}
@@ -38,7 +38,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         showThumbOnHoverOnly={!isHovering}
       />
 
-      <span className="w-10 text-left">{formatTime(duration)}</span>
+      <span className="w-10 text-left font-medium">{formatTime(duration)}</span>
     </div>
   )
 }
