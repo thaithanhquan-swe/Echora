@@ -1,5 +1,5 @@
 import React from "react"
-import { X, ListMusic } from "lucide-react"
+import { X, ListMusic, Music2 } from "lucide-react"
 import { usePlayer } from "@/context/PlayerContext"
 import { ViewType } from "@/types/music"
 import { NowPlayingView } from "@/components/sidebar/NowPlayingView"
@@ -38,7 +38,11 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
         <div className="flex items-center gap-2">
           {isQueueOpen && <ListMusic className="h-5 w-5 text-spotify-green stroke-[2]" />}
           <h3 className="font-bold text-base text-white truncate tracking-tight">
-            {isQueueOpen ? "Danh sách chờ" : currentTrack?.title || "Đang phát"}
+            {isQueueOpen
+              ? "Danh sách chờ"
+              : currentTrack
+              ? currentTrack.title
+              : "Đang phát"}
           </h3>
         </div>
 
@@ -65,18 +69,24 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
             onPlayTrack={playTrack}
             onRemoveFromQueue={removeFromQueue}
           />
+        ) : currentTrack ? (
+          <NowPlayingView
+            currentTrack={currentTrack}
+            isLiked={isLiked}
+            queue={queue}
+            onToggleLike={toggleLike}
+            onOpenQueue={() => setQueueOpen(true)}
+            onPlayTrack={playTrack}
+            onNavigate={onNavigate}
+          />
         ) : (
-          currentTrack && (
-            <NowPlayingView
-              currentTrack={currentTrack}
-              isLiked={isLiked}
-              queue={queue}
-              onToggleLike={toggleLike}
-              onOpenQueue={() => setQueueOpen(true)}
-              onPlayTrack={playTrack}
-              onNavigate={onNavigate}
-            />
-          )
+          <div className="flex flex-col items-center justify-center py-24 text-center p-6 text-spotify-subdued">
+            <Music2 className="h-12 w-12 mb-3 stroke-[1.5] text-neutral-600 animate-pulse" />
+            <p className="font-bold text-white text-base">Chưa phát bài hát nào</p>
+            <p className="text-xs mt-1 text-neutral-400">
+              Hãy chọn bất kỳ bài hát nào từ Trang chủ hoặc Tìm kiếm để bắt đầu nghe nhạc.
+            </p>
+          </div>
         )}
       </div>
     </aside>

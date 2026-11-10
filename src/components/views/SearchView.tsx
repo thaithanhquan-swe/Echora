@@ -48,50 +48,81 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
     setLoading(true)
     const timeout = setTimeout(() => {
-      Promise.all([
-        spotifyApi.search(trimmedQuery, "track", 10).catch(() => null),
-        spotifyApi.search(trimmedQuery, "artist", 6).catch(() => null),
-        spotifyApi.search(trimmedQuery, "playlist", 6).catch(() => null),
-        spotifyApi.search(trimmedQuery, "album", 6).catch(() => null),
-      ])
-        .then(([tracksRes, artistsRes, playlistsRes, albumsRes]) => {
-          if (tracksRes?.success && Array.isArray(tracksRes.results)) {
-            setMatchingSongs(tracksRes.results.map((t) => mapApiTrackToSong(t)))
-          } else {
-            setMatchingSongs([])
-          }
+      const promises: Promise<any>[] = []
 
-          if (artistsRes?.success && Array.isArray(artistsRes.results)) {
-            setMatchingArtists(
-              artistsRes.results.map((a) => mapApiArtistToArtist(a))
-            )
-          } else {
-            setMatchingArtists([])
-          }
+      if (activeTab === "all" || activeTab === "tracks") {
+        promises.push(
+          spotifyApi
+            .search(trimmedQuery, "track", activeTab === "tracks" ? 15 : 8)
+            .then((res) => {
+              if (res?.success && Array.isArray(res.results)) {
+                setMatchingSongs(res.results.map((t) => mapApiTrackToSong(t)))
+              } else {
+                setMatchingSongs([])
+              }
+            })
+            .catch(() => setMatchingSongs([]))
+        )
+      }
 
-          if (playlistsRes?.success && Array.isArray(playlistsRes.results)) {
-            setMatchingPlaylists(
-              playlistsRes.results.map((p) => mapApiPlaylistToPlaylist(p))
-            )
-          } else {
-            setMatchingPlaylists([])
-          }
+      if (activeTab === "all" || activeTab === "artists") {
+        promises.push(
+          spotifyApi
+            .search(trimmedQuery, "artist", activeTab === "artists" ? 10 : 5)
+            .then((res) => {
+              if (res?.success && Array.isArray(res.results)) {
+                setMatchingArtists(
+                  res.results.map((a) => mapApiArtistToArtist(a))
+                )
+              } else {
+                setMatchingArtists([])
+              }
+            })
+            .catch(() => setMatchingArtists([]))
+        )
+      }
 
-          if (albumsRes?.success && Array.isArray(albumsRes.results)) {
-            setMatchingAlbums(
-              albumsRes.results.map((a) => mapApiAlbumToAlbum(a))
-            )
-          } else {
-            setMatchingAlbums([])
-          }
-        })
-        .finally(() => {
-          setLoading(false)
-        })
-    }, 300)
+      if (activeTab === "all" || activeTab === "playlists") {
+        promises.push(
+          spotifyApi
+            .search(trimmedQuery, "playlist", activeTab === "playlists" ? 10 : 5)
+            .then((res) => {
+              if (res?.success && Array.isArray(res.results)) {
+                setMatchingPlaylists(
+                  res.results.map((p) => mapApiPlaylistToPlaylist(p))
+                )
+              } else {
+                setMatchingPlaylists([])
+              }
+            })
+            .catch(() => setMatchingPlaylists([]))
+        )
+      }
+
+      if (activeTab === "all" || activeTab === "albums") {
+        promises.push(
+          spotifyApi
+            .search(trimmedQuery, "album", activeTab === "albums" ? 10 : 5)
+            .then((res) => {
+              if (res?.success && Array.isArray(res.results)) {
+                setMatchingAlbums(
+                  res.results.map((a) => mapApiAlbumToAlbum(a))
+                )
+              } else {
+                setMatchingAlbums([])
+              }
+            })
+            .catch(() => setMatchingAlbums([]))
+        )
+      }
+
+      Promise.all(promises).finally(() => {
+        setLoading(false)
+      })
+    }, 400)
 
     return () => clearTimeout(timeout)
-  }, [trimmedQuery])
+  }, [trimmedQuery, activeTab])
 
   const topResult: Song | null = matchingSongs.length > 0 ? matchingSongs[0] : null
   const isTopResultPlaying = Boolean(
@@ -185,7 +216,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   <div className={`${topResult ? "lg:col-span-7" : "col-span-12"}`}>
                     <h3 className="text-xl font-bold text-white mb-3 tracking-tight">Bài hát</h3>
                     <div className="space-y-1">
-                      {matchingSongs.slice(0, activeTab === "tracks" ? 10 : 4).map((song, idx) => (
+                      {matchingSongs.slice(0, activeTab === "tracks" ? 15 : 4).map((song, idx) => (
                         <TrackRow
                           key={song.id}
                           song={song}

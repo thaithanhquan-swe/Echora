@@ -4,21 +4,6 @@ import { spotifyApi, FALLBACK_AUDIO_URL } from "@/services/spotifyApi"
 
 export type RepeatMode = "off" | "all" | "one"
 
-// Initial real track loaded for Echora
-const INITIAL_TRACK: Song = {
-  id: "5x5Vx0Musv3LSUKzjY73mA",
-  title: "Hãy Trao Cho Anh",
-  artist: "Sơn Tùng M-TP, Snoop Dogg",
-  artistId: "5dfZ5uSmzR7VQK0udbAVpf",
-  album: "Hãy Trao Cho Anh",
-  albumId: "5x5Vx0Musv3LSUKzjY73mA",
-  duration: 245,
-  coverUrl: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e023403b37254ffacb7732e92da",
-  audioUrl: "https://p.scdn.co/mp3-preview/dbf78395209a0c86218ceb411b01b2e7bdd52dcd",
-  isLiked: true,
-  explicit: false,
-}
-
 interface PlayerContextType {
   currentTrack: Song | null
   isPlaying: boolean
@@ -62,12 +47,13 @@ const LOCAL_STORAGE_LIKES_KEY = "echora_liked_songs"
 const LOCAL_STORAGE_LIKED_DATA_KEY = "echora_liked_songs_data"
 
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentTrack, setCurrentTrack] = useState<Song | null>(INITIAL_TRACK)
+  // Start with NO song playing initially per user request
+  const [currentTrack, setCurrentTrack] = useState<Song | null>(null)
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [volume, setVolumeState] = useState<number>(0.7)
   const [isMuted, setIsMuted] = useState<boolean>(false)
   const [currentTime, setCurrentTime] = useState<number>(0)
-  const [duration, setDuration] = useState<number>(INITIAL_TRACK.duration)
+  const [duration, setDuration] = useState<number>(0)
   const [queue, setQueue] = useState<Song[]>([])
   const [history, setHistory] = useState<Song[]>([])
   const [isShuffled, setIsShuffled] = useState<boolean>(false)
@@ -82,7 +68,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } catch (e) {
       console.warn("Could not load liked song ids:", e)
     }
-    return new Set([INITIAL_TRACK.id])
+    return new Set<string>()
   })
 
   const [likedSongs, setLikedSongs] = useState<Song[]>(() => {
@@ -94,7 +80,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } catch (e) {
       console.warn("Could not load liked songs data:", e)
     }
-    return [INITIAL_TRACK]
+    return []
   })
 
   const [isRightSidebarOpen, setRightSidebarOpen] = useState<boolean>(true)
@@ -130,8 +116,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     const handleLoadedMetadata = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
-        setDuration(audio.duration)
+      if (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration)) {
+        setDuration(Math.round(audio.duration))
       }
     }
 
@@ -197,7 +183,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
 
       setCurrentTrack(updatedSong)
-      setDuration(song.duration)
+      setDuration(song.duration || 30)
       setCurrentTime(0)
 
       audioRef.current.src = audioUrl
@@ -216,14 +202,14 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   )
 
   const togglePlay = useCallback(() => {
-    if (!audioRef.current) return
+    if (!audioRef.current || !currentTrack) return
 
     if (isPlaying) {
       audioRef.current.pause()
       setIsPlaying(false)
     } else {
-      if (!audioRef.current.src && currentTrack) {
-        audioRef.current.src = currentTrack.audioUrl || FALLBACK_AUDIO_URL
+      if (!audioRef.current.src && currentTrack.audioUrl) {
+        audioRef.current.src = currentTrack.audioUrl
       }
       audioRef.current
         .play()
