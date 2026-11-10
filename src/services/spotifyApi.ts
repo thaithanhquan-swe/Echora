@@ -24,8 +24,16 @@ export interface SpotifyApiTrack {
   title: string
   artist?: string
   artists?: Array<{ id: string; name: string; url?: string } | string>
-  album?: string
+  album?: string | {
+    id?: string
+    name?: string
+    thumbnail?: string
+    images?: Array<{ url: string }>
+  } | null
+  album_id?: string
+  album_thumbnail?: string
   thumbnail?: string
+  images?: Array<{ url: string }>
   duration?: string
   duration_ms?: number
   release_date?: string
@@ -113,16 +121,26 @@ export function mapApiTrackToSong(
 
   // Display the FULL song duration (e.g. 3:23, 4:05)
   const fullDuration = parseDurationToSeconds(raw.duration, raw.duration_ms)
+  const nestedAlbum = typeof raw.album === "object" ? raw.album : undefined
+  const albumName = typeof raw.album === "string" ? raw.album : nestedAlbum?.name
+  const coverUrl =
+    raw.thumbnail ||
+    raw.album_thumbnail ||
+    nestedAlbum?.thumbnail ||
+    nestedAlbum?.images?.[0]?.url ||
+    raw.images?.[0]?.url ||
+    fallbackCover ||
+    DEFAULT_COVER
 
   return {
     id: raw.id,
     title: raw.title || "Unknown Title",
     artist: artists,
     artistId: primaryArtistId,
-    album: raw.album || fallbackAlbum || "Single",
-    albumId: fallbackAlbumId || "",
+    album: albumName || fallbackAlbum || "Unknown Album",
+    albumId: raw.album_id || nestedAlbum?.id || fallbackAlbumId || "",
     duration: fullDuration,
-    coverUrl: raw.thumbnail || fallbackCover || DEFAULT_COVER,
+    coverUrl,
     audioUrl: raw.preview_url || "",
     explicit: Boolean(raw.explicit),
   }
@@ -186,9 +204,7 @@ export function mapApiPlaylistToPlaylist(
   fallbackCover?: string
 ): Playlist {
   const coverUrl = raw.thumbnail || fallbackCover || DEFAULT_COVER
-  const songs: Song[] = (raw.tracks || []).map((track) =>
-    mapApiTrackToSong(track, raw.name, coverUrl, raw.id)
-  )
+  const songs: Song[] = (raw.tracks || []).map((track) => mapApiTrackToSong(track))
 
   const owner = raw.owner || "Spotify"
 
@@ -228,6 +244,25 @@ async function fetchWithCache<T>(url: string): Promise<T> {
 
 function encodeId(id: string): string {
   return encodeURIComponent(id)
+}
+
+function trackHasAlbumArtwork(track: SpotifyApiTrack): boolean {
+  const album = typeof track.album === "object" ? track.album : undefined
+  return Boolean(
+    track.thumbnail ||
+    track.album_thumbnail ||
+    album?.thumbnail ||
+    album?.images?.[0]?.url ||
+    track.images?.[0]?.url
+  )
+}
+
+function trackHasAlbumName(track: SpotifyApiTrack): boolean {
+  return Boolean(
+    typeof track.album === "string"
+      ? track.album
+      : track.album?.name
+  )
 }
 
 export const spotifyApi = {
@@ -338,8 +373,46 @@ export const spotifyApi = {
   },
 
   async getPlaylist(id: string) {
-    return fetchWithCache<{ success: boolean; playlist: SpotifyApiPlaylist }>(
+    const response = await fetchWithCache<{ success: boolean; playlist: SpotifyApiPlaylist }>(
       `${BASE_URL}/playlist/${encodeId(id)}`
     )
+
+    const tracks = response.playlist.tracks || []
+    const incompleteTracks = tracks
+      .map((track, index) => ({ track, index }))
+      .filter(({ track }) => !trackHasAlbumArtwork(track) || !trackHasAlbumName(track))
+
+    for (let start = 0; start < incompleteTracks.length; start += 4) {
+      const batch = incompleteTracks.slice(start, start + 4)
+      await Promise.all(
+        batch.map(async ({ track, index }) => {
+          try {
+            const detail = await spotifyApi.getTrack(track.id)
+            if (detail.success && detail.track) {
+              const detailedTrack = detail.track
+              tracks[index] = {
+                ...track,
+                ...detailedTrack,
+                album: detailedTrack.album || track.album,
+                album_id: detailedTrack.album_id || track.album_id,
+                album_thumbnail: detailedTrack.album_thumbnail || track.album_thumbnail,
+                thumbnail: detailedTrack.thumbnail || track.thumbnail,
+                images: detailedTrack.images?.length ? detailedTrack.images : track.images,
+                artist: detailedTrack.artist || track.artist,
+                artists: detailedTrack.artists?.length ? detailedTrack.artists : track.artists,
+                title: detailedTrack.title || track.title,
+                duration: detailedTrack.duration || track.duration,
+                duration_ms: detailedTrack.duration_ms || track.duration_ms,
+                preview_url: detailedTrack.preview_url || track.preview_url,
+              }
+            }
+          } catch {
+            // Keep the playlist track when its detail endpoint is unavailable.
+          }
+        })
+      )
+    }
+
+    return { ...response, playlist: { ...response.playlist, tracks } }
   },
 }
