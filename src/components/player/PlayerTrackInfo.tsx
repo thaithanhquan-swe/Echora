@@ -19,6 +19,8 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
     ? "Bản đầy đủ · Audius"
     : currentTrack.playbackSource === "freetouse"
       ? "Bản đầy đủ · Free To Use"
+      : currentTrack.playbackSource === "jamendo"
+        ? "Bản đầy đủ · Jamendo"
       : "Không có nguồn phát đầy đủ công khai"
 
   return (
@@ -64,6 +66,16 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
             className="text-[10px] text-spotify-green hover:underline"
           >
             Free To Use · nghe miễn phí
+          </a>
+        )}
+        {currentTrack.playbackSource === "jamendo" && currentTrack.sourceUrl && (
+          <a
+            href={currentTrack.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[10px] text-spotify-green hover:underline"
+          >
+            Jamendo · thông tin và license
           </a>
         )}
       </div>

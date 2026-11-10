@@ -13,6 +13,7 @@ import {
   mapApiTrackToSong,
 } from "@/services/spotifyApi"
 import { getTrendingAudiusTracks } from "@/services/audiusApi"
+import { getTrendingJamendoTracks } from "@/services/jamendoApi"
 import { Loader2 } from "lucide-react"
 
 interface HomeViewProps {
@@ -50,9 +51,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
       spotifyApi.search("V-Pop", "album", 6).catch(() => null),
       // Public full tracks available for in-app playback
       getTrendingAudiusTracks(10).catch(() => []),
+      getTrendingJamendoTracks(10).catch(() => []),
     ])
-      .then(([tracksRes, playlistsRes, artistRes1, artistRes2, albumsRes, publicTrackResults]) => {
+      .then(([tracksRes, playlistsRes, artistRes1, artistRes2, albumsRes, audiusTrackResults, jamendoTrackResults]) => {
         if (!isMounted) return
+        const publicTrackResults = [...audiusTrackResults, ...jamendoTrackResults]
         if (
           ![tracksRes, artistRes1, artistRes2, albumsRes].some(Boolean) &&
           playlistsRes.length === 0 &&

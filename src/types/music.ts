@@ -8,7 +8,8 @@ export interface Song {
   duration: number // in seconds
   coverUrl: string
   audioUrl: string
-  playbackSource?: "audius" | "freetouse" | "unavailable"
+  playbackSource?: "audius" | "freetouse" | "jamendo" | "unavailable"
+  sourceUrl?: string
   plays?: number
   isLiked?: boolean
   explicit?: boolean

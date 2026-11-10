@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useRef, useEffect, useCallb
 import { Song } from "@/types/music"
 import { findAudiusTrackStream } from "@/services/audiusApi"
 import { findFreeToUseStream } from "@/services/freeToUseApi"
+import { findJamendoTrackStream } from "@/services/jamendoApi"
 
 export type RepeatMode = "off" | "all" | "one"
 
@@ -188,7 +189,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       let audioUrl = ""
       let playbackSource: Song["playbackSource"] = "unavailable"
 
-      if ((song.playbackSource === "audius" || song.playbackSource === "freetouse") && song.audioUrl) {
+      if ((song.playbackSource === "audius" || song.playbackSource === "freetouse" || song.playbackSource === "jamendo") && song.audioUrl) {
         audioUrl = song.audioUrl
         playbackSource = song.playbackSource
       }
@@ -212,6 +213,18 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         } catch (e) {
           if (request.signal.aborted) return
           console.info("Free To Use full-track lookup failed.", e)
+        }
+      }
+
+      if (request.signal.aborted || playbackRequestRef.current !== request) return
+
+      if (!audioUrl) {
+        try {
+          audioUrl = await findJamendoTrackStream(song.title, song.artist, song.duration, request.signal) || ""
+          if (audioUrl) playbackSource = "jamendo"
+        } catch (e) {
+          if (request.signal.aborted) return
+          console.info("Jamendo full-track lookup failed.", e)
         }
       }
 

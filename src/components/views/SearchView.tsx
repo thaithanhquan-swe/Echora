@@ -15,6 +15,7 @@ import {
 } from "@/services/spotifyApi"
 import { searchAudiusTracks } from "@/services/audiusApi"
 import { searchFreeToUseTracks } from "@/services/freeToUseApi"
+import { searchJamendoTracks } from "@/services/jamendoApi"
 import { Loader2 } from "lucide-react"
 
 interface SearchViewProps {
@@ -63,9 +64,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
           Promise.all([
             searchAudiusTracks(trimmedQuery, 10).catch(() => []),
             searchFreeToUseTracks(trimmedQuery, 10).catch(() => []),
-          ]).then(([audiusSongs, freeToUseSongs]) => {
+            searchJamendoTracks(trimmedQuery, 10).catch(() => []),
+          ]).then(([audiusSongs, freeToUseSongs, jamendoSongs]) => {
             const unique = new Map<string, Song>()
-            ;[...audiusSongs, ...freeToUseSongs].forEach((song) => unique.set(song.id, song))
+            ;[...audiusSongs, ...freeToUseSongs, ...jamendoSongs].forEach((song) => unique.set(song.id, song))
             setMatchingPublicSongs(Array.from(unique.values()))
           })
         )
