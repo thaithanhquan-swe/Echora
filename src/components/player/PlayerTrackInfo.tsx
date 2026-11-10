@@ -46,14 +46,20 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
           {currentTrack.artist}
         </span>
         <span className="flex items-center gap-1.5 text-[10px] text-spotify-subdued">
-          <span>Bản nghe thử</span>
+          <span>
+            {currentTrack.playbackSource === "audius"
+              ? "Bản đầy đủ · Audius"
+              : currentTrack.playbackSource === "unavailable"
+                ? "Chưa có nguồn phát phù hợp"
+                : "Bản nghe thử · Spotify"}
+          </span>
           <button
             onClick={() => {
               pause()
               setIsSpotifyEmbedOpen(true)
             }}
             className="inline-flex items-center gap-0.5 text-spotify-green hover:underline"
-            aria-label="Nghe trọn bài trong Echora"
+            aria-label="Mở trình phát Spotify để nghe trọn bài"
           >
             Nghe trọn bài
           </button>

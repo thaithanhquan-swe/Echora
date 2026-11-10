@@ -8,6 +8,7 @@ export interface Song {
   duration: number // in seconds
   coverUrl: string
   audioUrl: string
+  playbackSource?: "audius" | "spotify-preview" | "unavailable"
   plays?: number
   isLiked?: boolean
   explicit?: boolean

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react"
 import { Song } from "@/types/music"
 import { spotifyApi } from "@/services/spotifyApi"
+import { findAudiusTrackStream } from "@/services/audiusApi"
 
 export type RepeatMode = "off" | "all" | "one"
 
@@ -92,6 +93,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const queueRef = useRef<Song[]>([])
   const isShuffledRef = useRef<boolean>(false)
   const repeatModeRef = useRef<RepeatMode>("off")
+  const playbackRequestRef = useRef<AbortController | null>(null)
 
   queueRef.current = queue
   isShuffledRef.current = isShuffled
@@ -160,10 +162,19 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [volume, isMuted])
 
-  // Play only the preview provided by the catalog API.
+  // Prefer a full-length Audius stream; Spotify's catalog API only provides previews.
   const playTrack = useCallback(
     async (song: Song, contextQueue?: Song[]) => {
       if (!audioRef.current) return
+
+      playbackRequestRef.current?.abort()
+      const controller = new AbortController()
+      playbackRequestRef.current = controller
+      const request = controller
+      audioRef.current.pause()
+      audioRef.current.removeAttribute("src")
+      audioRef.current.load()
+      setIsPlaying(false)
 
       if (currentTrack && currentTrack.id !== song.id) {
         setHistory((prev) => [currentTrack, ...prev.slice(0, 30)])
@@ -174,31 +185,48 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setQueue(remaining)
       }
 
-      let audioUrl = song.audioUrl
+      let audioUrl = ""
+      let playbackSource: Song["playbackSource"] = "unavailable"
+
+      try {
+        audioUrl = await findAudiusTrackStream(song.title, song.artist, song.duration, request.signal) || ""
+        if (audioUrl) playbackSource = "audius"
+      } catch (e) {
+        if (request.signal.aborted) return
+        console.info("Audius full-track lookup failed; falling back to Spotify preview.", e)
+      }
+
+      if (request.signal.aborted || playbackRequestRef.current !== request) return
 
       if (!audioUrl) {
-        try {
-          const res = await spotifyApi.getTrack(song.id)
-          if (res.success && res.track?.preview_url) {
-            audioUrl = res.track.preview_url
-          } else {
-            console.info("No Spotify preview is available for this track.")
-            return
+        audioUrl = song.audioUrl
+        if (!audioUrl) {
+          try {
+            const res = await spotifyApi.getTrack(song.id)
+            if (request.signal.aborted || playbackRequestRef.current !== request) return
+            audioUrl = res.success ? res.track?.preview_url || "" : ""
+          } catch (e) {
+            if (request.signal.aborted) return
+            console.warn("Failed to fetch track preview url:", e)
           }
-        } catch (e) {
-          console.warn("Failed to fetch track preview url:", e)
-          return
         }
+        playbackSource = audioUrl ? "spotify-preview" : "unavailable"
       }
 
       const updatedSong: Song = {
         ...song,
         audioUrl,
+        playbackSource,
       }
 
       setCurrentTrack(updatedSong)
       setDuration(0)
       setCurrentTime(0)
+
+      if (!audioUrl) {
+        console.info("No full Audius track or Spotify preview is available for this song.")
+        return
+      }
 
       audioRef.current.src = audioUrl
       audioRef.current.currentTime = 0
@@ -206,9 +234,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       audioRef.current
         .play()
         .then(() => {
+          if (playbackRequestRef.current !== request) return
           setIsPlaying(true)
         })
         .catch((err) => {
+          if (playbackRequestRef.current !== request) return
           console.warn("Autoplay prevented:", err)
           setIsPlaying(false)
         })
@@ -218,6 +248,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current || !currentTrack) return
+    if (currentTrack.playbackSource === "unavailable") return
 
     if (isPlaying) {
       audioRef.current.pause()
