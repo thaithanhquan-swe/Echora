@@ -50,7 +50,7 @@ export const QuickPickCard: React.FC<QuickPickCardProps> = ({
       {songs.length > 0 && (
         <button
           onClick={handlePlay}
-          className={`h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-spotify-green text-black flex items-center justify-center shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 focus:outline-none ${
+          className={`hidden sm:flex h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-spotify-green text-black items-center justify-center shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 focus:outline-none ${
             isCurrentPlayingContext && isPlaying
               ? "opacity-100"
               : "opacity-0 group-hover:opacity-100"

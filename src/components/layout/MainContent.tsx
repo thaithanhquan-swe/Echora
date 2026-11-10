@@ -64,7 +64,7 @@ export const MainContent: React.FC<MainContentProps> = ({
   }
 
   return (
-    <main className="flex-1 bg-neutral-900 rounded-lg overflow-y-auto overflow-x-hidden relative flex flex-col h-full focus:outline-none scroll-smooth">
+    <main className="flex-1 min-w-0 min-h-0 bg-neutral-900 rounded-lg overflow-y-auto overflow-x-hidden relative flex flex-col h-full focus:outline-none scroll-smooth overscroll-contain">
       {renderView()}
     </main>
   )

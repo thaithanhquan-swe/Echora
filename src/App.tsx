@@ -133,7 +133,7 @@ function AppContent() {
   }, [togglePlay, toggleMute, navigate])
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-black text-white p-1 sm:p-2 gap-1 sm:gap-2 overflow-hidden select-none">
+    <div className="app-shell flex flex-col bg-black text-white gap-1 sm:gap-2 overflow-hidden select-none">
       {/* Top Header Navigation */}
       <TopNav
         currentView={currentState.view}

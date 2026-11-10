@@ -90,9 +90,9 @@ export const TopNav: React.FC<TopNavProps> = ({
   }
 
   return (
-    <header className="h-16 w-full grid grid-cols-[minmax(0,1fr)_minmax(0,560px)_minmax(0,1fr)] items-center px-3 sm:px-4 z-30 select-none bg-black shrink-0 gap-2">
+    <header className="h-14 sm:h-16 w-full grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_minmax(0,560px)_minmax(0,1fr)] items-center px-2 sm:px-4 z-30 select-none bg-black shrink-0 gap-1 sm:gap-2">
       {/* Left: Echora Logo & History Buttons */}
-      <div className="flex items-center gap-3 shrink-0 min-w-0">
+      <div className="hidden sm:flex items-center gap-3 shrink-0 min-w-0">
         <div
           onClick={() => onNavigate("home")}
           className="flex items-center gap-2.5 cursor-pointer group focus:outline-none"
@@ -135,7 +135,7 @@ export const TopNav: React.FC<TopNavProps> = ({
       </div>
 
       {/* Center: Home icon + Pill Search Bar */}
-      <div className="flex items-center gap-2 min-w-0 w-full px-1 sm:px-2 justify-self-center">
+      <div className="col-start-1 sm:col-start-2 row-start-1 flex items-center gap-2 min-w-0 w-full px-0 sm:px-2 justify-self-center">
         {/* Home Button */}
         <button
           onClick={() => onNavigate("home")}
@@ -174,7 +174,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                 onNavigate("search")
               }
             }}
-            className="w-full h-full bg-transparent text-white placeholder:text-spotify-subdued text-sm sm:text-base pl-10 sm:pl-12 pr-16 rounded-full focus:outline-none font-medium"
+            className="w-full h-full bg-transparent text-white placeholder:text-spotify-subdued text-base pl-10 sm:pl-12 pr-16 rounded-full focus:outline-none font-medium"
           />
 
           <div className="absolute right-3.5 flex items-center gap-2 text-spotify-subdued">
@@ -199,12 +199,13 @@ export const TopNav: React.FC<TopNavProps> = ({
         </div>
       </div>
 
-      <div className="relative flex justify-end min-w-0">
+      <div className="col-start-2 sm:col-start-3 row-start-1 relative flex justify-end min-w-0">
         <button
           onClick={handleInstall}
           disabled={isInstalled}
           title={isInstalled ? "Echora đã được cài đặt" : "Cài đặt ứng dụng"}
-          className="inline-flex items-center justify-center gap-1.5 h-9 px-2 sm:px-3.5 rounded-full text-xs font-bold text-white hover:scale-105 hover:bg-white/10 transition-all focus:outline-none disabled:text-spotify-green disabled:hover:scale-100"
+          aria-label={isInstalled ? "Echora đã được cài đặt" : "Cài đặt ứng dụng"}
+          className="inline-flex items-center justify-center gap-1.5 h-9 w-9 sm:w-auto px-0 sm:px-3.5 rounded-full text-xs font-bold text-white hover:scale-105 hover:bg-white/10 transition-all focus:outline-none disabled:text-spotify-green disabled:hover:scale-100"
         >
           <Download className="h-4 w-4 stroke-[2] shrink-0" />
           <span className="hidden sm:inline whitespace-nowrap">{isInstalled ? "Đã cài đặt" : "Cài ứng dụng"}</span>
