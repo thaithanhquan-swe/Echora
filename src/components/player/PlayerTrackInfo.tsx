@@ -1,5 +1,5 @@
 import React from "react"
-import { PlusCircle, CheckCircle2 } from "lucide-react"
+import { PlusCircle, CheckCircle2, ExternalLink } from "lucide-react"
 import { Song, ViewType } from "@/types/music"
 
 interface PlayerTrackInfoProps {
@@ -39,6 +39,18 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
           className="text-xs text-spotify-subdued truncate hover:underline hover:text-white cursor-pointer transition-colors"
         >
           {currentTrack.artist}
+        </span>
+        <span className="flex items-center gap-1.5 text-[10px] text-spotify-subdued">
+          <span>Bản nghe thử</span>
+          <a
+            href={`https://open.spotify.com/track/${encodeURIComponent(currentTrack.id)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-0.5 text-spotify-green hover:underline"
+            aria-label="Mở bài hát đầy đủ trên Spotify"
+          >
+            Nghe đầy đủ <ExternalLink className="h-2.5 w-2.5" />
+          </a>
         </span>
       </div>
 

@@ -88,16 +88,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const prevVolumeRef = useRef<number>(0.7)
-  const virtualTimeRef = useRef<number>(0)
-  const timerRef = useRef<any>(null)
-  const isPlayingRef = useRef<boolean>(false)
-  const currentTrackRef = useRef<Song | null>(null)
+  const nextTrackRef = useRef<() => void>(() => {})
   const queueRef = useRef<Song[]>([])
   const isShuffledRef = useRef<boolean>(false)
   const repeatModeRef = useRef<RepeatMode>("off")
 
-  isPlayingRef.current = isPlaying
-  currentTrackRef.current = currentTrack
   queueRef.current = queue
   isShuffledRef.current = isShuffled
   repeatModeRef.current = repeatMode
@@ -118,43 +113,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [likedSongIds, likedSongs])
 
-  // Virtual time ticker: advances currentTime up to song.duration for full listening
-  useEffect(() => {
-    if (isPlaying && currentTrack) {
-      timerRef.current = setInterval(() => {
-        const fullDur = currentTrackRef.current?.duration || 200
-        virtualTimeRef.current += 1
-
-        if (virtualTimeRef.current >= fullDur) {
-          virtualTimeRef.current = 0
-          setCurrentTime(0)
-          if (repeatModeRef.current === "one") {
-            if (audioRef.current) {
-              audioRef.current.currentTime = 0
-              audioRef.current.play().catch(console.warn)
-            }
-          } else {
-            nextTrack()
-          }
-        } else {
-          setCurrentTime(virtualTimeRef.current)
-        }
-      }, 1000)
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-    }
-  }, [isPlaying, currentTrack])
-
   // Initialize audio element
   useEffect(() => {
     const audio = new Audio()
@@ -164,29 +122,31 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const handlePlay = () => setIsPlaying(true)
     const handlePause = () => setIsPlaying(false)
 
-    // When preview audio snippet ends, loop it so music keeps playing for the full track
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
+    const handleDurationChange = () => {
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0)
+    }
     const handleEnded = () => {
-      const fullDur = currentTrackRef.current?.duration || 200
-      if (virtualTimeRef.current < fullDur - 1) {
+      if (repeatModeRef.current === "one") {
         audio.currentTime = 0
         audio.play().catch(console.warn)
       } else {
-        if (repeatModeRef.current === "one") {
-          audio.currentTime = 0
-          audio.play().catch(console.warn)
-        } else {
-          nextTrack()
-        }
+        setIsPlaying(false)
+        nextTrackRef.current()
       }
     }
 
     audio.addEventListener("play", handlePlay)
     audio.addEventListener("pause", handlePause)
+    audio.addEventListener("timeupdate", handleTimeUpdate)
+    audio.addEventListener("durationchange", handleDurationChange)
     audio.addEventListener("ended", handleEnded)
 
     return () => {
       audio.removeEventListener("play", handlePlay)
       audio.removeEventListener("pause", handlePause)
+      audio.removeEventListener("timeupdate", handleTimeUpdate)
+      audio.removeEventListener("durationchange", handleDurationChange)
       audio.removeEventListener("ended", handleEnded)
       audio.pause()
       audio.src = ""
@@ -200,7 +160,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [volume, isMuted])
 
-  // Play a specific track (displaying full track duration)
+  // Play only the preview provided by the catalog API.
   const playTrack = useCallback(
     async (song: Song, contextQueue?: Song[]) => {
       if (!audioRef.current) return
@@ -236,9 +196,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         audioUrl,
       }
 
-      virtualTimeRef.current = 0
       setCurrentTrack(updatedSong)
-      setDuration(song.duration || 200)
+      setDuration(0)
       setCurrentTime(0)
 
       audioRef.current.src = audioUrl
@@ -264,6 +223,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       audioRef.current.pause()
       setIsPlaying(false)
     } else {
+      if (
+        Number.isFinite(audioRef.current.duration) &&
+        audioRef.current.currentTime >= audioRef.current.duration
+      ) {
+        audioRef.current.currentTime = 0
+        setCurrentTime(0)
+      }
       if (!audioRef.current.src && currentTrack.audioUrl) {
         audioRef.current.src = currentTrack.audioUrl
       }
@@ -313,11 +279,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [history, currentTrack, playTrack])
 
+  nextTrackRef.current = nextTrack
+
   const prevTrack = useCallback(() => {
-    if (virtualTimeRef.current > 3) {
-      virtualTimeRef.current = 0
+    if (audioRef.current && audioRef.current.currentTime > 3) {
       setCurrentTime(0)
-      if (audioRef.current) audioRef.current.currentTime = 0
+      audioRef.current.currentTime = 0
       return
     }
 
@@ -329,7 +296,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
       playTrack(prevSong)
     } else if (audioRef.current) {
-      virtualTimeRef.current = 0
       setCurrentTime(0)
       audioRef.current.currentTime = 0
     }
@@ -337,11 +303,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const seekTo = useCallback(
     (seconds: number) => {
-      virtualTimeRef.current = seconds
-      setCurrentTime(seconds)
       if (audioRef.current && audioRef.current.duration) {
-        const audioLen = audioRef.current.duration
-        audioRef.current.currentTime = seconds % audioLen
+        const targetTime = Math.max(0, Math.min(seconds, audioRef.current.duration))
+        audioRef.current.currentTime = targetTime
+        setCurrentTime(targetTime)
         if (isPlaying) {
           audioRef.current.play().catch(console.warn)
         }
