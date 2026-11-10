@@ -121,19 +121,19 @@ export const YouTubeVideoPanel: React.FC<YouTubeVideoPanelProps> = ({ track }) =
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-950/95 p-4 text-center">
             <p className="text-sm font-semibold text-white">Video này không phát được trong Echora.</p>
             <a href={videoUrl} target="_blank" rel="noreferrer" className="text-xs text-spotify-green hover:underline">
-              Mở trên YouTube <ExternalLink className="inline h-3 w-3" />
+              Mở liên kết nguồn <ExternalLink className="inline h-3 w-3" />
             </a>
           </div>
         )}
       </div>
       <div className="flex items-center justify-between gap-2 text-[10px] text-spotify-subdued">
-        <span>Video YouTube · player bên dưới điều khiển cùng video</span>
+        <span>Trình phát Echora · Đồng bộ cùng thanh điều khiển</span>
         <a href={videoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-white">
-          YouTube <ExternalLink className="h-3 w-3" />
+          Nguồn phát <ExternalLink className="h-3 w-3" />
         </a>
       </div>
       <p className="text-[10px] text-spotify-subdued">
-        Video tuân theo <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer" className="underline hover:text-white">Điều khoản YouTube</a>.
+        Trình phát đa phương tiện thuộc nền tảng Echora.
       </p>
     </div>
   )

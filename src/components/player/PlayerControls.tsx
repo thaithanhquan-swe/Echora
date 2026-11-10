@@ -7,7 +7,6 @@ import {
   Shuffle,
   Repeat,
   Repeat1,
-  PictureInPicture2,
 } from "lucide-react"
 import { RepeatMode } from "@/context/PlayerContext"
 
@@ -33,11 +32,11 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
   onToggleRepeat,
 }) => {
   return (
-    <div className="flex items-center gap-6 mb-1.5 select-none">
+    <div className="flex items-center gap-4 sm:gap-6 mb-1.5 select-none">
       {/* 1. Shuffle Button */}
       <button
         onClick={onToggleShuffle}
-        className={`relative p-1 transition-all hover:scale-105 active:scale-95 focus:outline-none ${
+        className={`relative p-1 transition-all hover:scale-110 active:scale-95 focus:outline-none hidden sm:block ${
           isShuffled
             ? "text-spotify-green hover:text-spotify-brightgreen"
             : "text-spotify-subdued hover:text-white"
@@ -53,38 +52,38 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
       {/* 2. Prev Track Button */}
       <button
         onClick={onPrevTrack}
-        className="p-1 text-spotify-subdued hover:text-white transition-all hover:scale-105 active:scale-90 focus:outline-none"
+        className="p-1 text-spotify-subdued hover:text-white transition-all hover:scale-110 active:scale-90 focus:outline-none hidden sm:block"
         title="Trước đó"
       >
-        <SkipBack className="h-5 w-5 fill-current stroke-none" />
+        <SkipBack className="h-5 w-5 sm:h-6 sm:w-6 fill-current stroke-none" />
       </button>
 
-      {/* 3. Play / Pause Button - Enlarged to 36px with 18px icon */}
+      {/* 3. Play / Pause Button - Enlarged to 40px sm:48px */}
       <button
         onClick={onTogglePlay}
-        className="h-9 w-9 rounded-full bg-white hover:scale-105 active:scale-95 text-black flex items-center justify-center transition-all shadow-md focus:outline-none"
+        className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white hover:scale-105 active:scale-95 text-black flex items-center justify-center transition-all shadow-lg focus:outline-none"
         title={isPlaying ? "Tạm dừng" : "Phát"}
       >
         {isPlaying ? (
-          <Pause className="h-5 w-5 fill-black text-black" />
+          <Pause className="h-5 w-5 sm:h-6 sm:w-6 fill-black text-black" />
         ) : (
-          <Play className="h-5 w-5 fill-black text-black ml-0.5" />
+          <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-black text-black ml-0.5" />
         )}
       </button>
 
       {/* 4. Next Track Button */}
       <button
         onClick={onNextTrack}
-        className="p-1 text-spotify-subdued hover:text-white transition-all hover:scale-105 active:scale-90 focus:outline-none"
+        className="p-1 text-spotify-subdued hover:text-white transition-all hover:scale-110 active:scale-90 focus:outline-none"
         title="Kế tiếp"
       >
-        <SkipForward className="h-5 w-5 fill-current stroke-none" />
+        <SkipForward className="h-5 w-5 sm:h-6 sm:w-6 fill-current stroke-none" />
       </button>
 
       {/* 5. Repeat Button */}
       <button
         onClick={onToggleRepeat}
-        className={`relative p-1 transition-all hover:scale-105 active:scale-95 focus:outline-none ${
+        className={`relative p-1 transition-all hover:scale-110 active:scale-95 focus:outline-none hidden sm:block ${
           repeatMode !== "off"
             ? "text-spotify-green hover:text-spotify-brightgreen"
             : "text-spotify-subdued hover:text-white"
@@ -105,15 +104,6 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
         {repeatMode !== "off" && (
           <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-spotify-green" />
         )}
-      </button>
-
-      {/* 6. Miniplayer / PIP button */}
-      <button
-        onClick={() => alert("Chế độ cửa sổ thu nhỏ (Miniplayer)!")}
-        className="p-1 text-spotify-subdued hover:text-white transition-all hover:scale-105 focus:outline-none hidden sm:block"
-        title="Miniplayer"
-      >
-        <PictureInPicture2 className="h-5 w-5 stroke-[2]" />
       </button>
     </div>
   )

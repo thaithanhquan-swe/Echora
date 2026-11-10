@@ -32,16 +32,16 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
   }
 
   return (
-    <div className="flex items-center justify-end gap-3.5 w-[30%] min-w-[200px] select-none">
+    <div className="flex items-center justify-end gap-2.5 sm:gap-3.5 w-auto sm:w-[30%] min-w-0 sm:min-w-[180px] select-none">
       {/* 1. Now Playing View toggle */}
       <button
         onClick={onToggleRightSidebar}
-        className={`p-1 transition-all hover:scale-105 focus:outline-none ${
+        className={`p-1.5 transition-all hover:scale-105 focus:outline-none ${
           isRightSidebarOpen
             ? "text-spotify-green"
             : "text-spotify-subdued hover:text-white"
         }`}
-        title="Chế độ xem Đang phát"
+        title="Chế độ xem Đang phát / Video"
       >
         <Tv className="h-5 w-5 stroke-[1.8]" />
       </button>
@@ -49,7 +49,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
       {/* 2. Queue toggle */}
       <button
         onClick={onToggleQueue}
-        className={`p-1 transition-all hover:scale-105 focus:outline-none ${
+        className={`p-1.5 transition-all hover:scale-105 focus:outline-none ${
           isQueueOpen
             ? "text-spotify-green"
             : "text-spotify-subdued hover:text-white"
@@ -59,13 +59,15 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         <ListMusic className="h-5 w-5 stroke-[1.8]" />
       </button>
 
-      {/* 3. Volume Control */}
-      <VolumeControl
-        volume={volume}
-        isMuted={isMuted}
-        onVolumeChange={onVolumeChange}
-        onToggleMute={onToggleMute}
-      />
+      {/* 3. Volume Control - Desktop & Tablet */}
+      <div className="hidden md:flex items-center">
+        <VolumeControl
+          volume={volume}
+          isMuted={isMuted}
+          onVolumeChange={onVolumeChange}
+          onToggleMute={onToggleMute}
+        />
+      </div>
 
       {/* 4. Miniplayer */}
       <button

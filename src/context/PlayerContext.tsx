@@ -91,7 +91,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return []
   })
 
-  const [isRightSidebarOpen, setRightSidebarOpen] = useState<boolean>(true)
+  const [isRightSidebarOpen, setRightSidebarOpen] = useState<boolean>(false)
   const [isQueueOpen, setQueueOpen] = useState<boolean>(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
