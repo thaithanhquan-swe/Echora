@@ -15,15 +15,9 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
   onToggleLike,
   onNavigate,
 }) => {
-  const playbackLabel = currentTrack.playbackSource === "audius"
-    ? "Bản đầy đủ · Audius"
-    : currentTrack.playbackSource === "freetouse"
-      ? "Bản đầy đủ · Free To Use"
-      : currentTrack.playbackSource === "jamendo"
-        ? "Bản đầy đủ · Jamendo"
-        : currentTrack.playbackSource === "youtube"
-          ? "Video YouTube · player Echora"
-          : "Không có nguồn phát đầy đủ công khai"
+  const playbackLabel = currentTrack.playbackSource === "youtube"
+    ? "Video YouTube · phát trong Echora"
+    : "Không có video YouTube công khai phù hợp"
 
   return (
     <div className="flex items-center gap-3.5 w-[30%] min-w-[180px] max-w-[360px] select-none">
@@ -54,32 +48,12 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
             <button
               onClick={() => onNavigate("search", `${currentTrack.title} ${currentTrack.artist}`)}
               className="inline-flex shrink-0 items-center gap-0.5 text-spotify-green hover:underline"
-              aria-label="Tìm bản đầy đủ trong nguồn nhạc công khai"
+              aria-label="Tìm video trên YouTube"
             >
               <Search className="h-3 w-3" /> Tìm nguồn
             </button>
           )}
         </span>
-        {currentTrack.playbackSource === "freetouse" && (
-          <a
-            href="https://freetouse.com/music"
-            target="_blank"
-            rel="noreferrer"
-            className="text-[10px] text-spotify-green hover:underline"
-          >
-            Free To Use · nghe miễn phí
-          </a>
-        )}
-        {currentTrack.playbackSource === "jamendo" && currentTrack.sourceUrl && (
-          <a
-            href={currentTrack.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[10px] text-spotify-green hover:underline"
-          >
-            Jamendo · thông tin và license
-          </a>
-        )}
       </div>
 
       <button

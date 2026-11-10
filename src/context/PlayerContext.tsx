@@ -1,8 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react"
 import { Song } from "@/types/music"
-import { findAudiusTrackStream } from "@/services/audiusApi"
-import { findFreeToUseStream } from "@/services/freeToUseApi"
-import { findJamendoTrackStream } from "@/services/jamendoApi"
 import { findYouTubeVideo } from "@/services/youtubeApi"
 
 export type RepeatMode = "off" | "all" | "one"
@@ -213,7 +210,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [currentTrack])
 
-  // Prefer a full-length Audius stream; Spotify's catalog API only provides previews.
+  // YouTube is the only catalog and playback provider.
   const playTrack = useCallback(
     async (song: Song, contextQueue?: Song[]) => {
       if (!audioRef.current) return
@@ -236,68 +233,19 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setQueue(remaining)
       }
 
-      let audioUrl = ""
-      let playbackSource: Song["playbackSource"] = "unavailable"
-      let youtubeVideoId = song.playbackSource === "youtube" ? song.youtubeVideoId : undefined
-      if (youtubeVideoId) playbackSource = "youtube"
-
-      if (!youtubeVideoId && (song.playbackSource === "audius" || song.playbackSource === "freetouse" || song.playbackSource === "jamendo") && song.audioUrl) {
-        audioUrl = song.audioUrl
-        playbackSource = song.playbackSource
+      let youtubeVideoId = song.youtubeVideoId
+      try {
+        youtubeVideoId = youtubeVideoId || await findYouTubeVideo(song, request.signal) || undefined
+      } catch (e) {
+        if (request.signal.aborted) return
+        console.warn("YouTube video lookup failed:", e)
       }
-
-      if (!audioUrl && !youtubeVideoId) {
-        try {
-          audioUrl = await findAudiusTrackStream(song.title, song.artist, song.duration, request.signal) || ""
-          if (audioUrl) playbackSource = "audius"
-        } catch (e) {
-          if (request.signal.aborted) return
-          console.info("Audius full-track lookup failed; trying Free To Use.", e)
-        }
-      }
-
-      if (request.signal.aborted || playbackRequestRef.current !== request) return
-
-      if (!audioUrl && !youtubeVideoId) {
-        try {
-          audioUrl = await findFreeToUseStream(song.title, song.artist, song.duration, request.signal) || ""
-          if (audioUrl) playbackSource = "freetouse"
-        } catch (e) {
-          if (request.signal.aborted) return
-          console.info("Free To Use full-track lookup failed.", e)
-        }
-      }
-
-      if (request.signal.aborted || playbackRequestRef.current !== request) return
-
-      if (!audioUrl && !youtubeVideoId) {
-        try {
-          audioUrl = await findJamendoTrackStream(song.title, song.artist, song.duration, request.signal) || ""
-          if (audioUrl) playbackSource = "jamendo"
-        } catch (e) {
-          if (request.signal.aborted) return
-          console.info("Jamendo full-track lookup failed.", e)
-        }
-      }
-
-      if (request.signal.aborted || playbackRequestRef.current !== request) return
-
-      if (!audioUrl && !youtubeVideoId) {
-        try {
-          youtubeVideoId = await findYouTubeVideo(song, request.signal) || undefined
-          if (youtubeVideoId) playbackSource = "youtube"
-        } catch (e) {
-          if (request.signal.aborted) return
-          console.info("YouTube video lookup failed.", e)
-        }
-      }
-
       if (request.signal.aborted || playbackRequestRef.current !== request) return
 
       const updatedSong: Song = {
         ...song,
-        audioUrl,
-        playbackSource,
+        audioUrl: "",
+        playbackSource: youtubeVideoId ? "youtube" : "unavailable",
         youtubeVideoId,
       }
 
@@ -305,31 +253,18 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setDuration(0)
       setCurrentTime(0)
 
-      if (!audioUrl && !youtubeVideoId) {
-        console.info("No full-track match is available from Audius or Free To Use.")
+      if (!youtubeVideoId) {
+        console.info("No embeddable YouTube video match is available.")
         return
       }
 
-      if (youtubeVideoId) {
-        // The right-side YouTube iframe is the audio/video source for this song.
-        // Player controls in the bottom bar control that same iframe.
-        return
+      if (currentTrack?.youtubeVideoId === youtubeVideoId && youtubePlayerRef.current) {
+        youtubePlayerRef.current.loadVideoById(youtubeVideoId)
       }
 
-      audioRef.current.src = audioUrl
-      audioRef.current.currentTime = 0
-      audioRef.current.load()
-      audioRef.current
-        .play()
-        .then(() => {
-          if (playbackRequestRef.current !== request) return
-          setIsPlaying(true)
-        })
-        .catch((err) => {
-          if (playbackRequestRef.current !== request) return
-          console.warn("Autoplay prevented:", err)
-          setIsPlaying(false)
-        })
+      // The right-side YouTube iframe is the playback source; bottom controls
+      // control that same iframe through the player context.
+      return
     },
     [currentTrack]
   )
