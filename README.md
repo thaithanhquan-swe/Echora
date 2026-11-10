@@ -2,8 +2,6 @@
 
 Một ứng dụng nghe nhạc trực tuyến với giao diện và trải nghiệm mô phỏng Spotify Web Player, được xây dựng bằng **React**, **TypeScript**, **Tailwind CSS** và **shadcn/ui**.
 
-![Echora Spotify Clone](https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&auto=format&fit=crop&q=80)
-
 ---
 
 ## 🚀 Công nghệ sử dụng (Tech Stack)
