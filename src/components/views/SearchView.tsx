@@ -29,6 +29,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
   const { currentTrack, isPlaying, playTrack, togglePlay } = usePlayer()
   const [activeTab, setActiveTab] = useState<SearchTab>("all")
   const [loading, setLoading] = useState(false)
+  const [searchError, setSearchError] = useState(false)
   const [matchingSongs, setMatchingSongs] = useState<Song[]>([])
   const [matchingArtists, setMatchingArtists] = useState<Artist[]>([])
   const [matchingPlaylists, setMatchingPlaylists] = useState<Playlist[]>([])
@@ -38,6 +39,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
   useEffect(() => {
     if (!trimmedQuery) {
+      setSearchError(false)
       setMatchingSongs([])
       setMatchingArtists([])
       setMatchingPlaylists([])
@@ -47,6 +49,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
     }
 
     setLoading(true)
+    setSearchError(false)
     const timeout = setTimeout(() => {
       const promises: Promise<any>[] = []
 
@@ -61,7 +64,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                 setMatchingSongs([])
               }
             })
-            .catch(() => setMatchingSongs([]))
+            .catch(() => {
+              setMatchingSongs([])
+              setSearchError(true)
+            })
         )
       }
 
@@ -78,7 +84,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                 setMatchingArtists([])
               }
             })
-            .catch(() => setMatchingArtists([]))
+            .catch(() => {
+              setMatchingArtists([])
+              setSearchError(true)
+            })
         )
       }
 
@@ -95,7 +104,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                 setMatchingPlaylists([])
               }
             })
-            .catch(() => setMatchingPlaylists([]))
+            .catch(() => {
+              setMatchingPlaylists([])
+              setSearchError(true)
+            })
         )
       }
 
@@ -112,7 +124,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                 setMatchingAlbums([])
               }
             })
-            .catch(() => setMatchingAlbums([]))
+            .catch(() => {
+              setMatchingAlbums([])
+              setSearchError(true)
+            })
         )
       }
 
@@ -186,6 +201,13 @@ export const SearchView: React.FC<SearchViewProps> = ({
             <div className="flex flex-col items-center justify-center py-24 text-spotify-subdued">
               <Loader2 className="h-8 w-8 animate-spin text-spotify-green mb-3" />
               <p className="text-sm font-semibold text-white">Đang tìm kiếm trên Echora...</p>
+            </div>
+          ) : !hasAnyResults && searchError ? (
+            <div className="text-center py-20 text-spotify-subdued">
+              <p className="text-lg font-semibold text-white">
+                Không thể kết nối đến danh mục Spotify.
+              </p>
+              <p className="text-sm mt-2">Vui lòng thử lại sau.</p>
             </div>
           ) : !hasAnyResults ? (
             <div className="text-center py-20 text-spotify-subdued">
@@ -284,7 +306,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                         key={album.id}
                         id={album.id}
                         title={album.title}
-                        subtitle={`${album.releaseYear} • ${album.artist}`}
+                        subtitle={`${album.releaseYear ? `${album.releaseYear} • ` : ""}${album.artist}`}
                         imageUrl={album.coverUrl}
                         type="album"
                         songs={album.songs}

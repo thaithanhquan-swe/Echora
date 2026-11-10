@@ -16,45 +16,6 @@ interface SidebarProps {
   onToggleCollapse?: () => void
 }
 
-const DEFAULT_PLAYLISTS: Playlist[] = [
-  {
-    id: "37i9dQZF1DX0F4i7Q9pshJ",
-    title: "Hot Hits Vietnam",
-    description: "Playlist • Echora",
-    coverUrl: "https://i.scdn.co/image/ab67706f00000002c3aca0b8b4aefea7d1dcfb38",
-    owner: "Echora",
-    songs: [],
-    isPinned: true,
-  },
-  {
-    id: "37i9dQZF1DXcBWIGoYBM5M",
-    title: "Today's Top Hits",
-    description: "Playlist • Echora",
-    coverUrl: "https://i.scdn.co/image/ab67706f00000002e06fabee7abffa117bed662f",
-    owner: "Echora",
-    songs: [],
-    isPinned: false,
-  },
-  {
-    id: "37i9dQZF1DX4g8Gs5nUhpp",
-    title: "V-Pop Không Thể Thiếu",
-    description: "Playlist • Echora",
-    coverUrl: "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84357d905e6717b5b0b5d2f725",
-    owner: "Echora",
-    songs: [],
-    isPinned: false,
-  },
-  {
-    id: "1AaxmI2e1HRhbwe9XJGPnT",
-    title: "m-tp M-TP",
-    description: "Album • Sơn Tùng M-TP",
-    coverUrl: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02794744c57c9f35db88249842",
-    owner: "Sơn Tùng M-TP",
-    songs: [],
-    isPinned: false,
-  },
-]
-
 export const Sidebar: React.FC<SidebarProps> = ({
   currentView,
   selectedId,
@@ -65,7 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { currentTrack, isPlaying, likedSongIds } = usePlayer()
   const [filter, setFilter] = useState<LibraryFilterType>("all")
   const [searchLibrary, setSearchLibrary] = useState("")
-  const [playlists, setPlaylists] = useState<Playlist[]>(DEFAULT_PLAYLISTS)
+  const [playlists, setPlaylists] = useState<Playlist[]>([])
 
   useEffect(() => {
     let isMounted = true
@@ -75,14 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (!isMounted) return
         if (res.success && Array.isArray(res.results)) {
           const mapped = res.results.map((p) => mapApiPlaylistToPlaylist(p))
-          setPlaylists((prev) => {
-            const map = new Map<string, Playlist>()
-            prev.forEach((p) => map.set(p.id, p))
-            mapped.forEach((p) => {
-              if (!map.has(p.id)) map.set(p.id, p)
-            })
-            return Array.from(map.values())
-          })
+          setPlaylists(mapped)
         }
       })
       .catch(() => {})

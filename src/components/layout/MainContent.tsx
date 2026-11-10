@@ -36,7 +36,7 @@ export const MainContent: React.FC<MainContentProps> = ({
       case "playlist":
         return (
           <PlaylistDetailView
-            playlistId={selectedId || "37i9dQZF1DX0F4i7Q9pshJ"}
+            playlistId={selectedId}
             onNavigate={onNavigate}
           />
         )
@@ -44,7 +44,7 @@ export const MainContent: React.FC<MainContentProps> = ({
       case "artist":
         return (
           <ArtistDetailView
-            artistId={selectedId || "5dfZ5uSmzR7VQK0udbAVpf"}
+            artistId={selectedId}
             onNavigate={onNavigate}
           />
         )
@@ -52,7 +52,7 @@ export const MainContent: React.FC<MainContentProps> = ({
       case "album":
         return (
           <AlbumDetailView
-            albumId={selectedId || "1AaxmI2e1HRhbwe9XJGPnT"}
+            albumId={selectedId}
             onNavigate={onNavigate}
           />
         )

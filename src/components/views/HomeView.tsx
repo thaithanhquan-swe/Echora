@@ -24,6 +24,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   const { playTrack } = usePlayer()
 
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [quickSongs, setQuickSongs] = useState<Song[]>([])
   const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [artists, setArtists] = useState<Artist[]>([])
@@ -32,6 +33,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   useEffect(() => {
     let isMounted = true
     setLoading(true)
+    setLoadError(false)
 
     Promise.all([
       // Popular Vietnamese tracks
@@ -46,6 +48,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
     ])
       .then(([tracksRes, playlistsRes, artistRes1, artistRes2, albumsRes]) => {
         if (!isMounted) return
+        if (![tracksRes, playlistsRes, artistRes1, artistRes2, albumsRes].some(Boolean)) {
+          setLoadError(true)
+          return
+        }
 
         if (tracksRes?.success && Array.isArray(tracksRes.results)) {
           setQuickSongs(tracksRes.results.map((t) => mapApiTrackToSong(t)))
@@ -141,6 +147,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         </div>
       ) : (
         <>
+          {loadError && (
+            <p className="py-8 text-center text-sm text-spotify-subdued">
+              Không thể tải danh mục Spotify. Vui lòng thử lại sau.
+            </p>
+          )}
           {/* 2. Quick Picks 8-card grid */}
           {(filter === "all" || filter === "music") && quickPicks.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -228,7 +239,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
                     key={album.id}
                     id={album.id}
                     title={album.title}
-                    subtitle={`${album.releaseYear} • ${album.artist}`}
+                    subtitle={`${album.releaseYear ? `${album.releaseYear} • ` : ""}${album.artist}`}
                     imageUrl={album.coverUrl}
                     type="album"
                     songs={album.songs}

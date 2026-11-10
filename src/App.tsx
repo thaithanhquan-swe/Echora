@@ -35,6 +35,7 @@ function AppContent() {
   const currentState = navHistory[historyIndex] || { view: "home" }
 
   const navigate = useCallback((view: ViewType, id?: string) => {
+    if (view === "search" && id) setSearchQuery(id)
     setNavHistory((prev) => {
       const nextStack = prev.slice(0, historyIndex + 1)
       return [...nextStack, { view, id }]
