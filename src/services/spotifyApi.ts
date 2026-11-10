@@ -263,6 +263,34 @@ export const spotifyApi = {
     }>(`${BASE_URL}/search?${params.toString()}`)
   },
 
+  async getTrendingPlaylists(limit = 12): Promise<SpotifyApiPlaylist[]> {
+    const searchTerms = [
+      "hot hits vietnam",
+      "top vietnamese songs",
+      "viral vietnamese",
+      "Vietnamese",
+    ]
+    const responses = await Promise.all(
+      searchTerms.map((query) =>
+        spotifyApi.search(query, "playlist", Math.min(limit, 50)).catch(() => null)
+      )
+    )
+
+    const uniquePlaylists = new Map<string, SpotifyApiPlaylist>()
+    responses.forEach((response) => {
+      if (!response?.success || !Array.isArray(response.results)) return
+      response.results.forEach((playlist) => {
+        if (playlist?.id && !uniquePlaylists.has(playlist.id)) {
+          uniquePlaylists.set(playlist.id, playlist as SpotifyApiPlaylist)
+        }
+      })
+    })
+
+    return Array.from(uniquePlaylists.values())
+      .sort((a, b) => (b.followers || 0) - (a.followers || 0))
+      .slice(0, limit)
+  },
+
   async getTrack(id: string) {
     return fetchWithCache<{ success: boolean; track: SpotifyApiTrack }>(
       `${BASE_URL}/track/${encodeId(id)}`

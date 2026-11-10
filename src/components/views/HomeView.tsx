@@ -38,8 +38,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
     Promise.all([
       // Popular Vietnamese tracks
       spotifyApi.search("Son Tung M-TP", "track", 8).catch(() => null),
-      // Popular playlists
-      spotifyApi.search("Vietnam", "playlist", 8).catch(() => null),
+      // Playlists found through hot, top, viral, and Vietnamese catalog searches
+      spotifyApi.getTrendingPlaylists(12).catch(() => []),
       // Popular artists
       spotifyApi.search("HIEUTHUHAI", "artist", 5).catch(() => null),
       spotifyApi.search("Son Tung M-TP", "artist", 5).catch(() => null),
@@ -48,7 +48,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
     ])
       .then(([tracksRes, playlistsRes, artistRes1, artistRes2, albumsRes]) => {
         if (!isMounted) return
-        if (![tracksRes, playlistsRes, artistRes1, artistRes2, albumsRes].some(Boolean)) {
+        if (
+          ![tracksRes, artistRes1, artistRes2, albumsRes].some(Boolean) &&
+          playlistsRes.length === 0
+        ) {
           setLoadError(true)
           return
         }
@@ -57,8 +60,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
           setQuickSongs(tracksRes.results.map((t) => mapApiTrackToSong(t)))
         }
 
-        if (playlistsRes?.success && Array.isArray(playlistsRes.results)) {
-          setPlaylists(playlistsRes.results.map((p) => mapApiPlaylistToPlaylist(p)))
+        if (Array.isArray(playlistsRes)) {
+          setPlaylists(playlistsRes.map((p) => mapApiPlaylistToPlaylist(p)))
         }
 
         const combinedArtists: Artist[] = []
@@ -173,10 +176,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
               <div className="flex items-end justify-between mb-4">
                 <div>
                   <p className="text-xs text-spotify-subdued font-medium mb-1">
-                    Âm nhạc chọn lọc dựa trên sở thích của bạn.
+                    Playlist hot lấy trực tiếp từ catalog Spotify.
                   </p>
                   <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
-                    Danh sách phát nổi bật
+                    Playlist thịnh hành
                   </h2>
                 </div>
               </div>

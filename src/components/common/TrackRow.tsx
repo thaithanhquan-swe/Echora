@@ -124,7 +124,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
       {/* 4. Date Added */}
       {showDateAdded && (
         <div className="hidden lg:block text-spotify-subdued text-xs">
-          {song.addedAt || "1 ngày trước"}
+          {song.addedAt || "—"}
         </div>
       )}
 

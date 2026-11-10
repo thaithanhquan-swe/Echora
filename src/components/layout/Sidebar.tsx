@@ -31,13 +31,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   useEffect(() => {
     let isMounted = true
     spotifyApi
-      .search("Vietnamese", "playlist", 6)
+      .getTrendingPlaylists(12)
       .then((res) => {
         if (!isMounted) return
-        if (res.success && Array.isArray(res.results)) {
-          const mapped = res.results.map((p) => mapApiPlaylistToPlaylist(p))
-          setPlaylists(mapped)
-        }
+        setPlaylists(res.map((playlist) => mapApiPlaylistToPlaylist(playlist)))
       })
       .catch(() => {})
 
