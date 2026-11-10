@@ -1,7 +1,6 @@
 import React from "react"
-import { Trash2 } from "lucide-react"
+import { Trash2, Play, Pause } from "lucide-react"
 import { Song } from "@/types/music"
-import { SpotifyPlayIcon, SpotifyPauseIcon } from "@/components/icons/SpotifyIcons"
 
 interface QueueListViewProps {
   currentTrack: Song | null
@@ -40,9 +39,9 @@ export const QueueListView: React.FC<QueueListViewProps> = ({
                 className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
               >
                 {isPlaying ? (
-                  <SpotifyPauseIcon size={16} className="fill-white text-white" />
+                  <Pause className="h-4 w-4 fill-white text-white" />
                 ) : (
-                  <SpotifyPlayIcon size={16} className="fill-white text-white ml-0.5" />
+                  <Play className="h-4 w-4 fill-white text-white ml-0.5" />
                 )}
               </button>
             </div>
@@ -99,7 +98,7 @@ export const QueueListView: React.FC<QueueListViewProps> = ({
                   className="h-8 w-8 rounded-full hover:bg-neutral-700 flex items-center justify-center text-spotify-subdued hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
                   title="Xóa khỏi hàng đợi"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4 stroke-[2]" />
                 </button>
               </div>
             ))}

@@ -1,13 +1,8 @@
 import React from "react"
-import { MoreHorizontal } from "lucide-react"
+import { Play, Pause, Heart, MoreHorizontal } from "lucide-react"
 import { Song, ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { formatTime } from "@/lib/utils"
-import {
-  SpotifyPlayIcon,
-  SpotifyPauseIcon,
-  SpotifyHeartIcon,
-} from "@/components/icons/SpotifyIcons"
 
 interface TrackRowProps {
   song: Song
@@ -69,9 +64,9 @@ export const TrackRow: React.FC<TrackRowProps> = ({
           className="hidden group-hover:flex items-center justify-center text-white focus:outline-none"
         >
           {isCurrentSong && isPlaying ? (
-            <SpotifyPauseIcon size={12} className="fill-white text-white" />
+            <Pause className="h-4 w-4 fill-white text-white" />
           ) : (
-            <SpotifyPlayIcon size={12} className="fill-white text-white ml-0.5" />
+            <Play className="h-4 w-4 fill-white text-white ml-0.5" />
           )}
         </button>
       </div>
@@ -145,7 +140,9 @@ export const TrackRow: React.FC<TrackRowProps> = ({
           }`}
           title={isLiked ? "Bỏ thích" : "Thích"}
         >
-          <SpotifyHeartIcon size={16} filled={isLiked} />
+          <Heart
+            className={`h-4 w-4 ${isLiked ? "fill-spotify-green text-spotify-green" : ""}`}
+          />
         </button>
 
         <span className="w-10 text-right">{formatTime(song.duration)}</span>

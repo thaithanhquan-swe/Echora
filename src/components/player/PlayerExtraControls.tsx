@@ -1,10 +1,5 @@
 import React from "react"
-import {
-  SpotifyMicIcon,
-  SpotifyQueueIcon,
-  SpotifyDeviceIcon,
-  SpotifyFullscreenIcon,
-} from "@/components/icons/SpotifyIcons"
+import { Mic2, ListMusic, Tv, Maximize2 } from "lucide-react"
 import { VolumeControl } from "./VolumeControl"
 
 interface PlayerExtraControlsProps {
@@ -52,7 +47,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         }`}
         title="Chế độ xem Đang phát"
       >
-        <SpotifyDeviceIcon size={16} />
+        <Tv className="h-4 w-4 stroke-[2]" />
       </button>
 
       {/* Lyrics toggle */}
@@ -65,7 +60,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         }`}
         title="Lời bài hát"
       >
-        <SpotifyMicIcon size={16} />
+        <Mic2 className="h-4 w-4 stroke-[2]" />
       </button>
 
       {/* Queue toggle */}
@@ -78,7 +73,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         }`}
         title="Danh sách chờ"
       >
-        <SpotifyQueueIcon size={16} />
+        <ListMusic className="h-4 w-4 stroke-[2]" />
       </button>
 
       {/* Volume Control */}
@@ -95,7 +90,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         className="p-1.5 text-spotify-subdued hover:text-white transition-colors focus:outline-none hidden sm:block"
         title="Toàn màn hình"
       >
-        <SpotifyFullscreenIcon size={16} />
+        <Maximize2 className="h-4 w-4 stroke-[2]" />
       </button>
     </div>
   )

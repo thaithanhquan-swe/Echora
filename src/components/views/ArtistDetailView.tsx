@@ -1,15 +1,10 @@
 import React, { useState } from "react"
-import { MoreHorizontal } from "lucide-react"
+import { Play, Pause, CheckCircle2, MoreHorizontal } from "lucide-react"
 import { Artist, ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { TrackRow } from "@/components/common/TrackRow"
 import { Button } from "@/components/ui/button"
 import { formatNumber } from "@/lib/utils"
-import {
-  SpotifyPlayIcon,
-  SpotifyPauseIcon,
-  SpotifyVerifiedBadge,
-} from "@/components/icons/SpotifyIcons"
 
 interface ArtistDetailViewProps {
   artist: Artist
@@ -48,7 +43,7 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
         <div className="relative z-10 flex flex-col gap-2">
           {artist.verified && (
             <div className="flex items-center gap-1.5 text-xs font-bold text-white uppercase tracking-wider">
-              <SpotifyVerifiedBadge size={20} />
+              <CheckCircle2 className="h-5 w-5 text-sky-400 fill-sky-400 stroke-black stroke-[1.5]" />
               <span>Nghệ sĩ được xác minh</span>
             </div>
           )}
@@ -71,9 +66,9 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
           title="Phát nghệ sĩ"
         >
           {isArtistPlaying ? (
-            <SpotifyPauseIcon size={22} className="fill-black text-black" />
+            <Pause className="h-6 w-6 fill-black text-black" />
           ) : (
-            <SpotifyPlayIcon size={22} className="fill-black text-black ml-1" />
+            <Play className="h-6 w-6 fill-black text-black ml-1" />
           )}
         </button>
 
@@ -92,7 +87,7 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
           className="text-spotify-subdued hover:text-white transition-colors focus:outline-none"
           title="Tùy chọn khác"
         >
-          <MoreHorizontal className="h-6 w-6" />
+          <MoreHorizontal className="h-6 w-6 stroke-[2]" />
         </button>
       </div>
 

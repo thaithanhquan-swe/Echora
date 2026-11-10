@@ -1,6 +1,6 @@
 import React from "react"
+import { Radio, Play, Pause } from "lucide-react"
 import { RadioStation } from "@/data/mockData"
-import { SpotifyLogo, SpotifyPlayIcon, SpotifyPauseIcon } from "@/components/icons/SpotifyIcons"
 import { usePlayer } from "@/context/PlayerContext"
 
 interface RadioCardProps {
@@ -33,9 +33,9 @@ export const RadioCard: React.FC<RadioCardProps> = ({ station, onClick }) => {
         style={{ backgroundColor: station.color }}
         className="relative w-full aspect-square rounded-md overflow-hidden p-3.5 flex flex-col justify-between mb-3 text-black shadow-xl"
       >
-        {/* Top Header inside card: Logo + "RADIO" tag */}
+        {/* Top Header inside card: Radio icon + "RADIO" tag */}
         <div className="flex items-center justify-between text-black font-black">
-          <SpotifyLogo size={20} className="text-black" />
+          <Radio className="h-5 w-5 stroke-[2.5]" />
           <span className="text-xs font-black tracking-widest uppercase">
             RADIO
           </span>
@@ -68,9 +68,9 @@ export const RadioCard: React.FC<RadioCardProps> = ({ station, onClick }) => {
           title="Phát đài phát thanh"
         >
           {isCurrentPlayingContext && isPlaying ? (
-            <SpotifyPauseIcon size={18} className="fill-black text-black" />
+            <Pause className="h-5 w-5 fill-black text-black" />
           ) : (
-            <SpotifyPlayIcon size={18} className="fill-black text-black ml-0.5" />
+            <Play className="h-5 w-5 fill-black text-black ml-0.5" />
           )}
         </button>
       </div>

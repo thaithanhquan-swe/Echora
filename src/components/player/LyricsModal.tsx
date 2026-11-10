@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react"
-import { X } from "lucide-react"
+import { X, Mic2 } from "lucide-react"
 import { usePlayer } from "@/context/PlayerContext"
-import { SpotifyMicIcon } from "@/components/icons/SpotifyIcons"
 
 export const LyricsModal: React.FC = () => {
   const { currentTrack, currentTime, isLyricsOpen, setLyricsOpen, seekTo } = usePlayer()
@@ -41,7 +40,7 @@ export const LyricsModal: React.FC = () => {
       <div className="sticky top-0 z-20 flex items-center justify-between pb-6 backdrop-blur-md bg-transparent">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-spotify-green flex items-center justify-center text-black">
-            <SpotifyMicIcon size={20} className="fill-black text-black" />
+            <Mic2 className="h-5 w-5 stroke-[2]" />
           </div>
           <div>
             <h2 className="font-extrabold text-lg text-white tracking-tight">
@@ -58,7 +57,7 @@ export const LyricsModal: React.FC = () => {
           className="h-10 w-10 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center text-white transition-colors focus:outline-none"
           title="Đóng lời bài hát"
         >
-          <X className="h-6 w-6" />
+          <X className="h-6 w-6 stroke-[2]" />
         </button>
       </div>
 

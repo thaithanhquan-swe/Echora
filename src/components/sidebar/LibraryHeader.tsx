@@ -1,6 +1,5 @@
 import React from "react"
-import { Plus, ArrowRight } from "lucide-react"
-import { SpotifyLibraryIcon } from "@/components/icons/SpotifyIcons"
+import { Plus, ArrowRight, Library } from "lucide-react"
 
 interface LibraryHeaderProps {
   isCollapsed: boolean
@@ -22,9 +21,8 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
         className="flex items-center gap-2.5 font-bold text-sm hover:text-white transition-colors group focus:outline-none"
         title="Your Library"
       >
-        <SpotifyLibraryIcon
-          size={22}
-          className="group-hover:scale-105 transition-transform text-spotify-subdued group-hover:text-white"
+        <Library
+          className="h-5 w-5 stroke-[2] group-hover:scale-105 transition-transform text-spotify-subdued group-hover:text-white"
         />
         {!isCollapsed && (
           <span className="tracking-tight text-white font-bold transition-colors">
@@ -35,7 +33,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 
       {!isCollapsed && (
         <div className="flex items-center gap-2">
-          {/* Exact "+ Create" pill button from screenshot */}
+          {/* "+ Create" pill button */}
           <button
             onClick={onPlusClick}
             className="h-7 px-3 rounded-full bg-neutral-800 hover:bg-neutral-700 flex items-center gap-1 text-xs font-bold text-white transition-colors focus:outline-none hover:scale-105 active:scale-95"
@@ -51,7 +49,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
               className="h-7 w-7 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors focus:outline-none"
               title="Expand Your Library"
             >
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 stroke-[2]" />
             </button>
           )}
         </div>

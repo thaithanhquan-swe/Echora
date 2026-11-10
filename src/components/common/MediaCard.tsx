@@ -1,7 +1,7 @@
 import React from "react"
+import { Play, Pause } from "lucide-react"
 import { usePlayer } from "@/context/PlayerContext"
 import { Song } from "@/types/music"
-import { SpotifyPlayIcon, SpotifyPauseIcon } from "@/components/icons/SpotifyIcons"
 
 interface MediaCardProps {
   id: string
@@ -64,9 +64,9 @@ export const MediaCard: React.FC<MediaCardProps> = ({
             title="Phát"
           >
             {isCurrentPlayingContext && isPlaying ? (
-              <SpotifyPauseIcon size={18} className="fill-black text-black" />
+              <Pause className="h-5 w-5 fill-black text-black" />
             ) : (
-              <SpotifyPlayIcon size={18} className="fill-black text-black ml-0.5" />
+              <Play className="h-5 w-5 fill-black text-black ml-0.5" />
             )}
           </button>
         )}

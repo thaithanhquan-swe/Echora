@@ -1,10 +1,5 @@
 import React from "react"
-import { Download, MoreHorizontal } from "lucide-react"
-import {
-  SpotifyPlayIcon,
-  SpotifyPauseIcon,
-  SpotifyHeartIcon,
-} from "@/components/icons/SpotifyIcons"
+import { Play, Pause, Heart, Download, MoreHorizontal } from "lucide-react"
 
 interface ActionBarProps {
   isPlaying: boolean
@@ -32,9 +27,9 @@ export const ActionBar: React.FC<ActionBarProps> = ({
         title={isPlaying ? "Tạm dừng" : "Phát"}
       >
         {isPlaying ? (
-          <SpotifyPauseIcon size={22} className="fill-black text-black" />
+          <Pause className="h-6 w-6 fill-black text-black" />
         ) : (
-          <SpotifyPlayIcon size={22} className="fill-black text-black ml-1" />
+          <Play className="h-6 w-6 fill-black text-black ml-1" />
         )}
       </button>
 
@@ -45,7 +40,11 @@ export const ActionBar: React.FC<ActionBarProps> = ({
           className="text-spotify-subdued hover:text-white transition-colors focus:outline-none"
           title={isLiked ? "Bỏ thích" : "Lưu vào Thư viện"}
         >
-          <SpotifyHeartIcon size={32} filled={isLiked} />
+          <Heart
+            className={`h-7 w-7 ${
+              isLiked ? "fill-spotify-green text-spotify-green" : ""
+            }`}
+          />
         </button>
       )}
 

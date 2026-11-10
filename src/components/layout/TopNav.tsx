@@ -5,6 +5,9 @@ import {
   ArrowDownCircle,
   X,
   Layers,
+  Home,
+  Search,
+  Radio,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -17,11 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ViewType } from "@/types/music"
-import {
-  SpotifyLogo,
-  SpotifyHomeIcon,
-  SpotifySearchIcon,
-} from "@/components/icons/SpotifyIcons"
 
 interface TopNavProps {
   currentView: ViewType
@@ -47,12 +45,11 @@ export const TopNav: React.FC<TopNavProps> = ({
       {/* Left: Echora Project Logo */}
       <div
         onClick={() => onNavigate("home")}
-        className="flex items-center gap-2 cursor-pointer group pr-4 focus:outline-none"
+        className="flex items-center gap-2.5 cursor-pointer group pr-4 focus:outline-none"
       >
-        <SpotifyLogo
-          size={32}
-          className="text-spotify-green hover:scale-105 transition-transform shrink-0"
-        />
+        <div className="h-9 w-9 rounded-full bg-spotify-green flex items-center justify-center transition-transform group-hover:scale-105 shadow-md shadow-spotify-green/20 shrink-0">
+          <Radio className="h-5 w-5 text-black stroke-[2.5]" />
+        </div>
         <span className="font-black text-xl tracking-tighter text-white group-hover:text-spotify-green transition-colors font-sans">
           Echora
         </span>
@@ -70,7 +67,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           }`}
           title="Home"
         >
-          <SpotifyHomeIcon size={22} filled={currentView === "home"} />
+          <Home className="h-5 w-5 stroke-[2.2]" />
         </button>
 
         {/* Pill Search Input */}
@@ -79,10 +76,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             isFocused ? "border-white bg-neutral-850 ring-1 ring-white/20" : ""
           }`}
         >
-          <SpotifySearchIcon
-            size={18}
-            className="text-spotify-subdued absolute left-3.5 pointer-events-none"
-          />
+          <Search className="h-4 w-4 text-spotify-subdued absolute left-3.5 pointer-events-none stroke-[2]" />
 
           <input
             type="text"
@@ -111,7 +105,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                 className="hover:text-white focus:outline-none"
                 title="Xóa tìm kiếm"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 stroke-[2]" />
               </button>
             )}
             <div className="h-4 w-[1px] bg-neutral-700" />
@@ -120,7 +114,7 @@ export const TopNav: React.FC<TopNavProps> = ({
               className="hover:text-white focus:outline-none"
               title="Duyệt tìm"
             >
-              <Layers className="h-4 w-4" />
+              <Layers className="h-4 w-4 stroke-[2]" />
             </button>
           </div>
         </div>
@@ -148,14 +142,14 @@ export const TopNav: React.FC<TopNavProps> = ({
           className="h-8 w-8 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors focus:outline-none"
           title="Notifications"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-4 w-4 stroke-[2]" />
         </button>
 
         <button
           className="h-8 w-8 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors hidden sm:flex focus:outline-none"
           title="Friend Activity"
         >
-          <Users className="h-4 w-4" />
+          <Users className="h-4 w-4 stroke-[2]" />
         </button>
 
         {/* User profile avatar dropdown */}

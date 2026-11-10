@@ -1,7 +1,7 @@
 import React from "react"
+import { Clock } from "lucide-react"
 import { Song, ViewType } from "@/types/music"
 import { TrackRow } from "./TrackRow"
-import { SpotifyClockIcon } from "@/components/icons/SpotifyIcons"
 
 interface TrackTableProps {
   songs: Song[]
@@ -33,7 +33,7 @@ export const TrackTable: React.FC<TrackTableProps> = ({
         {showAlbum && <span className="hidden md:block">Album</span>}
         {showDateAdded && <span className="hidden lg:block">Ngày thêm</span>}
         <span className="flex justify-end pr-2">
-          <SpotifyClockIcon size={16} />
+          <Clock className="h-4 w-4 stroke-[2]" />
         </span>
       </div>
 
