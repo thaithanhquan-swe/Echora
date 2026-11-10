@@ -1,4 +1,4 @@
-const CACHE_NAME = "echora-shell-v1"
+const CACHE_NAME = "echora-shell-v2"
 const APP_SHELL = ["/", "/manifest.webmanifest", "/echora-192.png", "/echora-512.png"]
 
 self.addEventListener("install", (event) => {
