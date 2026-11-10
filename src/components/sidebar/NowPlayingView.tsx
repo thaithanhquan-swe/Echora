@@ -85,7 +85,7 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
           </p>
         </div>
 
-        {/* Spotify "+" in circle button */}
+        {/* Echora "+" in circle button */}
         <div className="flex items-center gap-1 shrink-0 pt-1">
           <button
             onClick={() => onToggleLike(currentTrack.id)}

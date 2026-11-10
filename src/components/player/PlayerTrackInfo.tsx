@@ -42,7 +42,7 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
         </span>
       </div>
 
-      {/* Spotify "+" / Add to Library button from screenshot */}
+      {/* Echora "+" / Add to Library button from screenshot */}
       <button
         onClick={() => onToggleLike(currentTrack.id)}
         className="text-spotify-subdued hover:text-white p-1 rounded-full transition-transform active:scale-125 shrink-0 focus:outline-none"

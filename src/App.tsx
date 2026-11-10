@@ -7,6 +7,7 @@ import { MainContent } from "@/components/layout/MainContent"
 import { RightSidebar } from "@/components/layout/RightSidebar"
 import { PlayerBar } from "@/components/player/PlayerBar"
 import { ViewType, NavigationState } from "@/types/music"
+import { spotifyApi } from "@/services/spotifyApi"
 
 function AppContent() {
   // Navigation stack state
@@ -15,6 +16,21 @@ function AppContent() {
   ])
   const [historyIndex, setHistoryIndex] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState<string>("")
+
+  // Verify API health & token on mount
+  useEffect(() => {
+    Promise.all([
+      spotifyApi.getHealth().catch(console.warn),
+      spotifyApi.getToken().catch(console.warn),
+    ]).then(([health, token]) => {
+      if (health?.success) {
+        console.log("Echora API Status: Online | Uptime:", health.uptime_seconds, "s")
+      }
+      if (token?.success) {
+        console.log("Echora Live Token: Active")
+      }
+    })
+  }, [])
 
   const currentState = navHistory[historyIndex] || { view: "home" }
 
@@ -101,7 +117,7 @@ function AppContent() {
         <RightSidebar onNavigate={navigate} />
       </div>
 
-      {/* Persistent Bottom Spotify Player Bar */}
+      {/* Persistent Bottom Echora Player Bar */}
       <PlayerBar onNavigate={navigate} />
     </div>
   )

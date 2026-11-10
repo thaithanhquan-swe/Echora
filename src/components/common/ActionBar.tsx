@@ -20,7 +20,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
 }) => {
   return (
     <div className="px-6 md:px-8 py-5 flex items-center gap-6 select-none">
-      {/* Huge Spotify Green Play/Pause Button */}
+      {/* Huge Echora Green Play/Pause Button */}
       <button
         onClick={onTogglePlay}
         className="h-14 w-14 rounded-full bg-spotify-green hover:scale-105 active:scale-95 text-black flex items-center justify-center transition-all shadow-xl hover:bg-spotify-lightgreen focus:outline-none"

@@ -71,7 +71,7 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
       .catch((err) => {
         if (!isMounted) return
         console.error("Error fetching artist details:", err)
-        setError("Lỗi kết nối tới Spotify API.")
+        setError("Lỗi kết nối tới máy chủ Echora.")
       })
       .finally(() => {
         if (isMounted) setLoading(false)
@@ -86,7 +86,7 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-spotify-subdued">
         <Loader2 className="h-10 w-10 animate-spin text-spotify-green mb-3" />
-        <p className="text-sm font-semibold text-white">Đang tải nghệ sĩ từ Spotify...</p>
+        <p className="text-sm font-semibold text-white">Đang tải thông tin nghệ sĩ...</p>
       </div>
     )
   }

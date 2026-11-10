@@ -20,27 +20,27 @@ const DEFAULT_PLAYLISTS: Playlist[] = [
   {
     id: "37i9dQZF1DX0F4i7Q9pshJ",
     title: "Hot Hits Vietnam",
-    description: "Playlist • Spotify",
+    description: "Playlist • Echora",
     coverUrl: "https://i.scdn.co/image/ab67706f00000002c3aca0b8b4aefea7d1dcfb38",
-    owner: "Spotify",
+    owner: "Echora",
     songs: [],
     isPinned: true,
   },
   {
     id: "37i9dQZF1DXcBWIGoYBM5M",
     title: "Today's Top Hits",
-    description: "Playlist • Spotify",
+    description: "Playlist • Echora",
     coverUrl: "https://i.scdn.co/image/ab67706f00000002e06fabee7abffa117bed662f",
-    owner: "Spotify",
+    owner: "Echora",
     songs: [],
     isPinned: false,
   },
   {
     id: "37i9dQZF1DX4g8Gs5nUhpp",
     title: "V-Pop Không Thể Thiếu",
-    description: "Playlist • Spotify",
+    description: "Playlist • Echora",
     coverUrl: "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84357d905e6717b5b0b5d2f725",
-    owner: "Spotify",
+    owner: "Echora",
     songs: [],
     isPinned: false,
   },
@@ -75,7 +75,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (!isMounted) return
         if (res.success && Array.isArray(res.results)) {
           const mapped = res.results.map((p) => mapApiPlaylistToPlaylist(p))
-          // Keep DEFAULT_PLAYLISTS and add fetched
           setPlaylists((prev) => {
             const map = new Map<string, Playlist>()
             prev.forEach((p) => map.set(p.id, p))

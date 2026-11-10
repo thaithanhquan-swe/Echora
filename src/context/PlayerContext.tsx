@@ -4,7 +4,7 @@ import { spotifyApi, FALLBACK_AUDIO_URL } from "@/services/spotifyApi"
 
 export type RepeatMode = "off" | "all" | "one"
 
-// Initial real track loaded from Spotify
+// Initial real track loaded for Echora
 const INITIAL_TRACK: Song = {
   id: "5x5Vx0Musv3LSUKzjY73mA",
   title: "Hãy Trao Cho Anh",
@@ -160,7 +160,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [volume, isMuted])
 
-  // Play a specific track (with Spotify audio preview)
+  // Play a specific track (with Echora audio preview)
   const playTrack = useCallback(
     async (song: Song, contextQueue?: Song[]) => {
       if (!audioRef.current) return

@@ -49,7 +49,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
       .catch((err) => {
         if (!isMounted) return
         console.error("Error fetching playlist:", err)
-        setError("Lỗi kết nối tới máy chủ API Spotify.")
+        setError("Lỗi kết nối tới máy chủ Echora.")
       })
       .finally(() => {
         if (isMounted) setLoading(false)
@@ -64,7 +64,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-spotify-subdued">
         <Loader2 className="h-10 w-10 animate-spin text-spotify-green mb-3" />
-        <p className="text-sm font-semibold text-white">Đang tải danh sách phát từ Spotify...</p>
+        <p className="text-sm font-semibold text-white">Đang tải danh sách phát...</p>
       </div>
     )
   }

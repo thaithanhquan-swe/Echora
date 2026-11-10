@@ -10,6 +10,19 @@ export const FALLBACK_AUDIO_URL =
 export const DEFAULT_COVER =
   "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80"
 
+export interface SpotifyTokenResponse {
+  success: boolean
+  access_token: string
+  token_type: string
+  note?: string
+}
+
+export interface SpotifyHealthResponse {
+  success: boolean
+  status: string
+  uptime_seconds?: number
+}
+
 export interface SpotifyApiTrack {
   id: string
   title: string
@@ -185,12 +198,15 @@ export function mapApiPlaylistToPlaylist(
     explicit: Boolean(t.explicit),
   }))
 
+  const rawOwner = raw.owner || "Echora"
+  const formattedOwner = rawOwner.replace(/Spotify/gi, "Echora")
+
   return {
     id: raw.id,
     title: raw.name,
-    description: raw.description || "Danh sách phát tuyển chọn trên Echora",
+    description: (raw.description || "Danh sách phát tuyển chọn trên Echora").replace(/Spotify/gi, "Echora"),
     coverUrl: coverUrl,
-    owner: raw.owner || "Spotify",
+    owner: formattedOwner,
     songs: songs,
     followers: raw.total_tracks ? raw.total_tracks * 1250 : 25000,
   }
@@ -216,7 +232,19 @@ async function fetchWithCache<T>(url: string): Promise<T> {
 }
 
 export const spotifyApi = {
-  // Search tracks, albums, artists, or playlists
+  // 1. GET /api/token - Fetch live access token
+  async getToken(): Promise<SpotifyTokenResponse> {
+    const url = `${BASE_URL}/token`
+    return fetchWithCache<SpotifyTokenResponse>(url)
+  },
+
+  // 2. GET /api/health - Check API health and uptime
+  async getHealth(): Promise<SpotifyHealthResponse> {
+    const url = `${BASE_URL}/health`
+    return fetchWithCache<SpotifyHealthResponse>(url)
+  },
+
+  // 3. GET /api/search - Search tracks, albums, artists, or playlists
   async search(
     query: string,
     type: "track" | "album" | "artist" | "playlist" = "track",
@@ -233,7 +261,7 @@ export const spotifyApi = {
     }>(url)
   },
 
-  // Fetch track metadata + preview_url
+  // 4. GET /api/track/:id - Fetch track metadata + preview_url
   async getTrack(id: string) {
     const url = `${BASE_URL}/track/${id}`
     return fetchWithCache<{
@@ -242,7 +270,7 @@ export const spotifyApi = {
     }>(url)
   },
 
-  // Fetch album metadata + tracklist
+  // 5. GET /api/album/:id - Fetch album metadata + tracklist
   async getAlbum(id: string) {
     const url = `${BASE_URL}/album/${id}`
     return fetchWithCache<{
@@ -251,7 +279,7 @@ export const spotifyApi = {
     }>(url)
   },
 
-  // Fetch artist profile
+  // 6. GET /api/artist/:id - Fetch artist profile & metadata
   async getArtist(id: string) {
     const url = `${BASE_URL}/artist/${id}`
     return fetchWithCache<{
@@ -260,7 +288,7 @@ export const spotifyApi = {
     }>(url)
   },
 
-  // Fetch artist's top tracks
+  // 7. GET /api/artist/:id/top-tracks - Fetch artist top tracks
   async getArtistTopTracks(id: string) {
     const url = `${BASE_URL}/artist/${id}/top-tracks`
     return fetchWithCache<{
@@ -272,7 +300,7 @@ export const spotifyApi = {
     }>(url)
   },
 
-  // Fetch artist's albums
+  // 8. GET /api/artist/:id/albums - Fetch artist discography
   async getArtistAlbums(id: string, type: "all" | "album" | "single" = "all", limit = 10) {
     const url = `${BASE_URL}/artist/${id}/albums?type=${type}&limit=${limit}`
     return fetchWithCache<{
@@ -283,7 +311,7 @@ export const spotifyApi = {
     }>(url)
   },
 
-  // Fetch playlist metadata + tracks
+  // 9. GET /api/playlist/:id - Fetch playlist metadata + tracks
   async getPlaylist(id: string) {
     const url = `${BASE_URL}/playlist/${id}`
     return fetchWithCache<{

@@ -137,7 +137,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 text-spotify-subdued">
           <Loader2 className="h-8 w-8 animate-spin text-spotify-green mb-3" />
-          <p className="text-sm font-semibold text-white">Đang tải dữ liệu âm nhạc từ Spotify...</p>
+          <p className="text-sm font-semibold text-white">Đang tải dữ liệu âm nhạc trên Echora...</p>
         </div>
       ) : (
         <>

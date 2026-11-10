@@ -112,7 +112,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
       ) : (
         /* Active Search Results */
         <div className="space-y-6">
-          {/* Filter Tabs matching available Spotify API endpoints */}
+          {/* Filter Tabs matching available API endpoints */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
             <Badge
               variant={activeTab === "all" ? "active" : "default"}
@@ -154,7 +154,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 text-spotify-subdued">
               <Loader2 className="h-8 w-8 animate-spin text-spotify-green mb-3" />
-              <p className="text-sm font-semibold text-white">Đang tìm kiếm trên Spotify...</p>
+              <p className="text-sm font-semibold text-white">Đang tìm kiếm trên Echora...</p>
             </div>
           ) : !hasAnyResults ? (
             <div className="text-center py-20 text-spotify-subdued">

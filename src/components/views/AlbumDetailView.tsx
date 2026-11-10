@@ -46,7 +46,7 @@ export const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({
       .catch((err) => {
         if (!isMounted) return
         console.error("Error fetching album:", err)
-        setError("Lỗi kết nối tới API Spotify.")
+        setError("Lỗi kết nối tới máy chủ Echora.")
       })
       .finally(() => {
         if (isMounted) setLoading(false)
@@ -61,7 +61,7 @@ export const AlbumDetailView: React.FC<AlbumDetailViewProps> = ({
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-spotify-subdued">
         <Loader2 className="h-10 w-10 animate-spin text-spotify-green mb-3" />
-        <p className="text-sm font-semibold text-white">Đang tải Album từ Spotify...</p>
+        <p className="text-sm font-semibold text-white">Đang tải Album...</p>
       </div>
     )
   }
