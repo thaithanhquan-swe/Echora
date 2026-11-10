@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "Echora",
+  "short_name": "Echora",
+  "description": "Nghe nhạc và khám phá âm nhạc cùng Echora.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#121212",
+  "icons": [
+    {
+      "src": "/echora-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/echora-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
