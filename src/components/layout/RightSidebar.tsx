@@ -35,7 +35,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
   const isLiked = currentTrack ? likedSongIds.has(currentTrack.id) : false
 
   return (
-    <aside className="w-80 lg:w-96 bg-spotify-black rounded-lg flex flex-col h-full overflow-hidden shrink-0 animate-in slide-in-from-right-4 duration-200">
+    <aside className="w-[340px] xl:w-[380px] 2xl:w-[420px] bg-spotify-black rounded-lg flex flex-col h-full overflow-hidden shrink-0 animate-in slide-in-from-right-4 duration-200">
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-neutral-800 select-none">
         <div className="flex items-center gap-2">

@@ -21,14 +21,19 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
   onToggleLike,
   onNavigate,
 }) => {
+  const lyricsLines = currentTrack.lyrics?.slice(1, 3) || [
+    { time: 0, text: "Oh-ooh-ooh-ooh" },
+    { time: 10, text: "(Nhìn người Việt b-b-b-bay mà không cần cánh kìa)" },
+  ]
+
   return (
-    <div className="space-y-5 select-none">
-      {/* 1. Big Album Artwork (Monochrome/Dark style matching screenshot) */}
+    <div className="space-y-5 select-none pb-4">
+      {/* 1. Big Album Artwork (Full width of the right panel) */}
       <div className="relative aspect-square rounded-lg overflow-hidden shadow-2xl group bg-neutral-950">
         <img
           src={currentTrack.coverUrl}
           alt={currentTrack.title}
-          className="w-full h-full object-cover filter contrast-125"
+          className="w-full h-full object-cover filter contrast-110"
         />
       </div>
 
@@ -49,7 +54,7 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
           </p>
         </div>
 
-        {/* Spotify "+" in circle button from screenshot */}
+        {/* Spotify "+" in circle button */}
         <div className="flex items-center gap-1 shrink-0 pt-1">
           <button
             onClick={() => onToggleLike(currentTrack.id)}
@@ -68,25 +73,25 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
         </div>
       </div>
 
-      {/* 3. Lyrics Preview Card (Exact Dark Red/Burgundy card from user's screenshot) */}
-      <div className="rounded-xl p-5 bg-[#59161a] hover:bg-[#681a1f] transition-colors cursor-pointer group shadow-lg">
+      {/* 3. Lyrics Preview Card (Exact Dark Burgundy card from screenshot) */}
+      <div className="rounded-xl p-5 bg-[#59161a] hover:bg-[#681a1f] transition-colors cursor-pointer group shadow-xl">
         <p className="text-xs font-bold text-white/80 uppercase tracking-wider mb-3">
           Lyrics preview
         </p>
-        <div className="space-y-1.5 text-white font-extrabold text-lg sm:text-xl leading-snug tracking-tight">
+        <div className="space-y-1.5 text-white font-extrabold text-xl leading-snug tracking-tight">
           <p className="line-clamp-2">
-            Tao chỉ như là nước thôi, mày định xiên vào đâu?
+            {lyricsLines[0]?.text || "Oh-ooh-ooh-ooh"}
           </p>
-          <p className="text-white/60">
-            Tao chỉ nói đúng một câu, "Em...
+          <p className="text-white/60 line-clamp-2">
+            {lyricsLines[1]?.text || "(Nhìn người Việt b-b-b-bay mà không cần cánh kìa)"}
           </p>
         </div>
       </div>
 
       {/* 4. About the artist Card */}
       {artist && (
-        <div className="rounded-xl overflow-hidden bg-neutral-800/80 border border-neutral-700/40 shadow-lg">
-          <div className="relative h-44 overflow-hidden">
+        <div className="rounded-xl overflow-hidden bg-neutral-800/80 border border-neutral-700/40 shadow-xl">
+          <div className="relative h-48 overflow-hidden">
             <img
               src={artist.bannerUrl}
               alt={artist.name}

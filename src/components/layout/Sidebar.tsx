@@ -40,8 +40,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`bg-spotify-black rounded-lg flex flex-col h-full overflow-hidden transition-all duration-300 ${
-        isCollapsed ? "w-20" : "w-72 lg:w-80"
+      className={`bg-spotify-black rounded-lg flex flex-col h-full overflow-hidden transition-all duration-300 shrink-0 ${
+        isCollapsed ? "w-20" : "w-[340px] xl:w-[380px] 2xl:w-[420px]"
       }`}
     >
       {/* 1. Header */}
