@@ -6,8 +6,6 @@ import { PlaylistDetailView } from "@/components/views/PlaylistDetailView"
 import { ArtistDetailView } from "@/components/views/ArtistDetailView"
 import { AlbumDetailView } from "@/components/views/AlbumDetailView"
 import { LikedSongsView } from "@/components/views/LikedSongsView"
-import { LyricsModal } from "@/components/player/LyricsModal"
-import { MOCK_PLAYLISTS, MOCK_ARTISTS, MOCK_ALBUMS } from "@/data/mockData"
 
 interface MainContentProps {
   currentView: ViewType
@@ -35,23 +33,29 @@ export const MainContent: React.FC<MainContentProps> = ({
           />
         )
 
-      case "playlist": {
-        const playlist =
-          MOCK_PLAYLISTS.find((p) => p.id === selectedId) || MOCK_PLAYLISTS[0]
-        return <PlaylistDetailView playlist={playlist} onNavigate={onNavigate} />
-      }
+      case "playlist":
+        return (
+          <PlaylistDetailView
+            playlistId={selectedId || "37i9dQZF1DX0F4i7Q9pshJ"}
+            onNavigate={onNavigate}
+          />
+        )
 
-      case "artist": {
-        const artist =
-          MOCK_ARTISTS.find((a) => a.id === selectedId) || MOCK_ARTISTS[0]
-        return <ArtistDetailView artist={artist} onNavigate={onNavigate} />
-      }
+      case "artist":
+        return (
+          <ArtistDetailView
+            artistId={selectedId || "5dfZ5uSmzR7VQK0udbAVpf"}
+            onNavigate={onNavigate}
+          />
+        )
 
-      case "album": {
-        const album =
-          MOCK_ALBUMS.find((a) => a.id === selectedId) || MOCK_ALBUMS[0]
-        return <AlbumDetailView album={album} onNavigate={onNavigate} />
-      }
+      case "album":
+        return (
+          <AlbumDetailView
+            albumId={selectedId || "1AaxmI2e1HRhbwe9XJGPnT"}
+            onNavigate={onNavigate}
+          />
+        )
 
       case "liked-songs":
         return <LikedSongsView onNavigate={onNavigate} />
@@ -64,7 +68,6 @@ export const MainContent: React.FC<MainContentProps> = ({
   return (
     <main className="flex-1 bg-neutral-900 rounded-lg overflow-y-auto overflow-x-hidden relative flex flex-col h-full focus:outline-none scroll-smooth">
       {renderView()}
-      <LyricsModal />
     </main>
   )
 }

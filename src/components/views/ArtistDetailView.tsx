@@ -1,22 +1,109 @@
-import React, { useState } from "react"
-import { Play, Pause, CheckCircle2, MoreHorizontal } from "lucide-react"
-import { Artist, ViewType } from "@/types/music"
+import React, { useEffect, useState } from "react"
+import { Play, Pause, CheckCircle2, MoreHorizontal, Loader2 } from "lucide-react"
+import { Artist, ViewType, Song, Album } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { TrackRow } from "@/components/common/TrackRow"
 import { Button } from "@/components/ui/button"
+import { MediaCard } from "@/components/common/MediaCard"
 import { formatNumber } from "@/lib/utils"
+import {
+  spotifyApi,
+  mapApiArtistToArtist,
+  mapApiTrackToSong,
+  mapApiAlbumToAlbum,
+} from "@/services/spotifyApi"
 
 interface ArtistDetailViewProps {
-  artist: Artist
+  artist?: Artist
+  artistId?: string
   onNavigate: (view: ViewType, id?: string) => void
 }
 
 export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
-  artist,
+  artist: initialArtist,
+  artistId,
   onNavigate,
 }) => {
   const { currentTrack, isPlaying, playTrack, togglePlay } = usePlayer()
+  const [artist, setArtist] = useState<Artist | null>(initialArtist || null)
+  const [loading, setLoading] = useState<boolean>(!initialArtist || Boolean(artistId))
+  const [error, setError] = useState<string | null>(null)
   const [isFollowing, setIsFollowing] = useState(false)
+
+  const targetId = artistId || initialArtist?.id
+
+  useEffect(() => {
+    if (!targetId) return
+
+    let isMounted = true
+    setLoading(true)
+    setError(null)
+
+    Promise.all([
+      spotifyApi.getArtist(targetId).catch(() => null),
+      spotifyApi.getArtistTopTracks(targetId).catch(() => null),
+      spotifyApi.getArtistAlbums(targetId, "all", 8).catch(() => null),
+    ])
+      .then(([artistRes, topTracksRes, albumsRes]) => {
+        if (!isMounted) return
+
+        if (!artistRes?.success || !artistRes.artist) {
+          setError("Không thể tải thông tin nghệ sĩ.")
+          return
+        }
+
+        const topSongs: Song[] = (topTracksRes?.tracks || []).map((t) =>
+          mapApiTrackToSong(t)
+        )
+
+        const albums: Album[] = (albumsRes?.albums || []).map((a) =>
+          mapApiAlbumToAlbum(a)
+        )
+
+        const mappedArtist = mapApiArtistToArtist(
+          artistRes.artist,
+          topSongs,
+          albums
+        )
+
+        setArtist(mappedArtist)
+      })
+      .catch((err) => {
+        if (!isMounted) return
+        console.error("Error fetching artist details:", err)
+        setError("Lỗi kết nối tới Spotify API.")
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [targetId])
+
+  if (loading && !artist) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-spotify-subdued">
+        <Loader2 className="h-10 w-10 animate-spin text-spotify-green mb-3" />
+        <p className="text-sm font-semibold text-white">Đang tải nghệ sĩ từ Spotify...</p>
+      </div>
+    )
+  }
+
+  if (error || !artist) {
+    return (
+      <div className="p-8 text-center text-spotify-subdued">
+        <p className="text-lg font-bold text-white mb-2">{error || "Không tìm thấy nghệ sĩ"}</p>
+        <button
+          onClick={() => onNavigate("home")}
+          className="text-spotify-green font-bold text-sm hover:underline"
+        >
+          Quay lại trang chủ
+        </button>
+      </div>
+    )
+  }
 
   const isArtistPlaying =
     currentTrack?.artistId === artist.id && isPlaying
@@ -32,11 +119,11 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
   return (
     <div className="min-h-full pb-12 animate-in fade-in duration-300">
       {/* Banner */}
-      <div className="relative h-80 sm:h-96 w-full flex items-end p-6 md:p-8 overflow-hidden select-none">
+      <div className="relative h-80 sm:h-96 w-full flex items-end p-6 md:p-8 overflow-hidden select-none bg-neutral-950">
         <img
           src={artist.bannerUrl}
           alt={artist.name}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover filter brightness-90"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/60 to-transparent" />
 
@@ -92,25 +179,50 @@ export const ArtistDetailView: React.FC<ArtistDetailViewProps> = ({
       </div>
 
       {/* Popular Tracks Section */}
-      <div className="px-6 md:px-8 space-y-4 mb-10">
-        <h2 className="text-2xl font-bold text-white tracking-tight">
-          Phổ biến
-        </h2>
+      {artist.topSongs.length > 0 && (
+        <div className="px-6 md:px-8 space-y-4 mb-10">
+          <h2 className="text-2xl font-bold text-white tracking-tight">
+            Phổ biến
+          </h2>
 
-        <div className="space-y-0.5">
-          {artist.topSongs.map((song, index) => (
-            <TrackRow
-              key={song.id}
-              song={song}
-              index={index}
-              contextSongs={artist.topSongs}
-              showAlbum={false}
-              showDateAdded={false}
-              onNavigate={onNavigate}
-            />
-          ))}
+          <div className="space-y-0.5">
+            {artist.topSongs.slice(0, 10).map((song, index) => (
+              <TrackRow
+                key={song.id}
+                song={song}
+                index={index}
+                contextSongs={artist.topSongs}
+                showAlbum={true}
+                showDateAdded={false}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Discography / Albums Section */}
+      {artist.albums.length > 0 && (
+        <div className="px-6 md:px-8 space-y-4 mb-10">
+          <h2 className="text-2xl font-bold text-white tracking-tight">
+            Danh sách đĩa hát
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {artist.albums.map((album) => (
+              <MediaCard
+                key={album.id}
+                id={album.id}
+                title={album.title}
+                subtitle={`${album.releaseYear} • Album`}
+                imageUrl={album.coverUrl}
+                type="album"
+                songs={album.songs}
+                onClick={() => onNavigate("album", album.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* About Section */}
       <div className="px-6 md:px-8 space-y-4">

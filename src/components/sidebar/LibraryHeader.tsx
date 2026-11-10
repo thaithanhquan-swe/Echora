@@ -1,17 +1,15 @@
 import React from "react"
-import { Plus, ArrowRight, Library } from "lucide-react"
+import { ArrowRight, Library } from "lucide-react"
 
 interface LibraryHeaderProps {
   isCollapsed: boolean
   onHeaderClick: () => void
-  onPlusClick: () => void
   onToggleCollapse?: () => void
 }
 
 export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   isCollapsed,
   onHeaderClick,
-  onPlusClick,
   onToggleCollapse,
 }) => {
   return (
@@ -31,28 +29,14 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
         )}
       </button>
 
-      {!isCollapsed && (
-        <div className="flex items-center gap-2">
-          {/* "+ Create" pill button */}
-          <button
-            onClick={onPlusClick}
-            className="h-7 px-3 rounded-full bg-neutral-800 hover:bg-neutral-700 flex items-center gap-1 text-xs font-bold text-white transition-colors focus:outline-none hover:scale-105 active:scale-95"
-            title="Create playlist or folder"
-          >
-            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-            <span>Create</span>
-          </button>
-
-          {onToggleCollapse && (
-            <button
-              onClick={onToggleCollapse}
-              className="h-7 w-7 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors focus:outline-none"
-              title="Expand Your Library"
-            >
-              <ArrowRight className="h-4 w-4 stroke-[2]" />
-            </button>
-          )}
-        </div>
+      {!isCollapsed && onToggleCollapse && (
+        <button
+          onClick={onToggleCollapse}
+          className="h-7 w-7 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors focus:outline-none"
+          title="Thu gọn thư viện"
+        >
+          <ArrowRight className="h-4 w-4 stroke-[2]" />
+        </button>
       )}
     </div>
   )

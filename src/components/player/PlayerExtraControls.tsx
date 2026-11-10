@@ -1,14 +1,12 @@
 import React from "react"
-import { Mic2, ListMusic, Tv, Maximize2, PictureInPicture2 } from "lucide-react"
+import { ListMusic, Tv, Maximize2, PictureInPicture2 } from "lucide-react"
 import { VolumeControl } from "./VolumeControl"
 
 interface PlayerExtraControlsProps {
-  isLyricsOpen: boolean
   isRightSidebarOpen: boolean
   isQueueOpen: boolean
   volume: number
   isMuted: boolean
-  onToggleLyrics: () => void
   onToggleRightSidebar: () => void
   onToggleQueue: () => void
   onVolumeChange: (vol: number) => void
@@ -16,12 +14,10 @@ interface PlayerExtraControlsProps {
 }
 
 export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
-  isLyricsOpen,
   isRightSidebarOpen,
   isQueueOpen,
   volume,
   isMuted,
-  onToggleLyrics,
   onToggleRightSidebar,
   onToggleQueue,
   onVolumeChange,
@@ -50,20 +46,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         <Tv className="h-5 w-5 stroke-[1.8]" />
       </button>
 
-      {/* 2. Lyrics toggle */}
-      <button
-        onClick={onToggleLyrics}
-        className={`p-1 transition-all hover:scale-105 focus:outline-none ${
-          isLyricsOpen
-            ? "text-spotify-green"
-            : "text-spotify-subdued hover:text-white"
-        }`}
-        title="Lời bài hát"
-      >
-        <Mic2 className="h-5 w-5 stroke-[1.8]" />
-      </button>
-
-      {/* 3. Queue toggle */}
+      {/* 2. Queue toggle */}
       <button
         onClick={onToggleQueue}
         className={`p-1 transition-all hover:scale-105 focus:outline-none ${
@@ -76,7 +59,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         <ListMusic className="h-5 w-5 stroke-[1.8]" />
       </button>
 
-      {/* 4. Volume Control */}
+      {/* 3. Volume Control */}
       <VolumeControl
         volume={volume}
         isMuted={isMuted}
@@ -84,7 +67,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         onToggleMute={onToggleMute}
       />
 
-      {/* 5. Miniplayer */}
+      {/* 4. Miniplayer */}
       <button
         onClick={() => alert("Chế độ cửa sổ thu nhỏ (Miniplayer)!")}
         className="p-1 text-spotify-subdued hover:text-white transition-all hover:scale-105 focus:outline-none hidden xl:block"
@@ -93,7 +76,7 @@ export const PlayerExtraControls: React.FC<PlayerExtraControlsProps> = ({
         <PictureInPicture2 className="h-5 w-5 stroke-[1.8]" />
       </button>
 
-      {/* 6. Fullscreen button */}
+      {/* 5. Fullscreen button */}
       <button
         onClick={handleFullscreen}
         className="p-1 text-spotify-subdued hover:text-white transition-all hover:scale-105 focus:outline-none hidden sm:block"

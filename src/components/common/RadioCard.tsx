@@ -1,6 +1,6 @@
 import React from "react"
 import { Radio, Play, Pause } from "lucide-react"
-import { RadioStation } from "@/data/mockData"
+import { RadioStation } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 
 interface RadioCardProps {

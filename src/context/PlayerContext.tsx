@@ -1,8 +1,23 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react"
 import { Song } from "@/types/music"
-import { MOCK_SONGS } from "@/data/mockData"
+import { spotifyApi, FALLBACK_AUDIO_URL } from "@/services/spotifyApi"
 
 export type RepeatMode = "off" | "all" | "one"
+
+// Initial real track loaded from Spotify
+const INITIAL_TRACK: Song = {
+  id: "5x5Vx0Musv3LSUKzjY73mA",
+  title: "Hãy Trao Cho Anh",
+  artist: "Sơn Tùng M-TP, Snoop Dogg",
+  artistId: "5dfZ5uSmzR7VQK0udbAVpf",
+  album: "Hãy Trao Cho Anh",
+  albumId: "5x5Vx0Musv3LSUKzjY73mA",
+  duration: 245,
+  coverUrl: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e023403b37254ffacb7732e92da",
+  audioUrl: "https://p.scdn.co/mp3-preview/dbf78395209a0c86218ceb411b01b2e7bdd52dcd",
+  isLiked: true,
+  explicit: false,
+}
 
 interface PlayerContextType {
   currentTrack: Song | null
@@ -16,12 +31,12 @@ interface PlayerContextType {
   isShuffled: boolean
   repeatMode: RepeatMode
   likedSongIds: Set<string>
-  isLyricsOpen: boolean
+  likedSongs: Song[]
   isRightSidebarOpen: boolean
   isQueueOpen: boolean
 
   // Actions
-  playTrack: (song: Song, contextQueue?: Song[]) => void
+  playTrack: (song: Song, contextQueue?: Song[]) => Promise<void>
   togglePlay: () => void
   pause: () => void
   resume: () => void
@@ -32,11 +47,9 @@ interface PlayerContextType {
   toggleMute: () => void
   toggleShuffle: () => void
   toggleRepeat: () => void
-  toggleLike: (songId: string) => void
+  toggleLike: (songOrId: string | Song, songData?: Song) => void
   addToQueue: (song: Song) => void
   removeFromQueue: (index: number) => void
-  setLyricsOpen: (open: boolean) => void
-  toggleLyrics: () => void
   setRightSidebarOpen: (open: boolean) => void
   toggleRightSidebar: () => void
   setQueueOpen: (open: boolean) => void
@@ -45,26 +58,66 @@ interface PlayerContextType {
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined)
 
+const LOCAL_STORAGE_LIKES_KEY = "echora_liked_songs"
+const LOCAL_STORAGE_LIKED_DATA_KEY = "echora_liked_songs_data"
+
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentTrack, setCurrentTrack] = useState<Song | null>(MOCK_SONGS[0])
+  const [currentTrack, setCurrentTrack] = useState<Song | null>(INITIAL_TRACK)
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [volume, setVolumeState] = useState<number>(0.7)
   const [isMuted, setIsMuted] = useState<boolean>(false)
-  const [currentTime, setCurrentTime] = useState<number>(40) // 0:40 matching screenshot
-  const [duration, setDuration] = useState<number>(MOCK_SONGS[0].duration) // 3:20
-  const [queue, setQueue] = useState<Song[]>(MOCK_SONGS.slice(1))
+  const [currentTime, setCurrentTime] = useState<number>(0)
+  const [duration, setDuration] = useState<number>(INITIAL_TRACK.duration)
+  const [queue, setQueue] = useState<Song[]>([])
   const [history, setHistory] = useState<Song[]>([])
   const [isShuffled, setIsShuffled] = useState<boolean>(false)
   const [repeatMode, setRepeatMode] = useState<RepeatMode>("off")
-  const [likedSongIds, setLikedSongIds] = useState<Set<string>>(
-    new Set(MOCK_SONGS.filter(s => s.isLiked).map(s => s.id))
-  )
-  const [isLyricsOpen, setLyricsOpen] = useState<boolean>(false)
-  const [isRightSidebarOpen, setRightSidebarOpen] = useState<boolean>(true) // Open by default matching screenshot
+
+  const [likedSongIds, setLikedSongIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_LIKES_KEY)
+      if (saved) {
+        return new Set(JSON.parse(saved))
+      }
+    } catch (e) {
+      console.warn("Could not load liked song ids:", e)
+    }
+    return new Set([INITIAL_TRACK.id])
+  })
+
+  const [likedSongs, setLikedSongs] = useState<Song[]>(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_LIKED_DATA_KEY)
+      if (saved) {
+        return JSON.parse(saved)
+      }
+    } catch (e) {
+      console.warn("Could not load liked songs data:", e)
+    }
+    return [INITIAL_TRACK]
+  })
+
+  const [isRightSidebarOpen, setRightSidebarOpen] = useState<boolean>(true)
   const [isQueueOpen, setQueueOpen] = useState<boolean>(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const prevVolumeRef = useRef<number>(0.7)
+
+  // Persist liked song ids and songs array
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        LOCAL_STORAGE_LIKES_KEY,
+        JSON.stringify(Array.from(likedSongIds))
+      )
+      localStorage.setItem(
+        LOCAL_STORAGE_LIKED_DATA_KEY,
+        JSON.stringify(likedSongs)
+      )
+    } catch (e) {
+      console.warn("Could not persist likes:", e)
+    }
+  }, [likedSongIds, likedSongs])
 
   // Initialize audio element
   useEffect(() => {
@@ -107,36 +160,60 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [volume, isMuted])
 
-  // Play a specific track
-  const playTrack = useCallback((song: Song, contextQueue?: Song[]) => {
-    if (!audioRef.current) return
+  // Play a specific track (with Spotify audio preview)
+  const playTrack = useCallback(
+    async (song: Song, contextQueue?: Song[]) => {
+      if (!audioRef.current) return
 
-    // If changing track, save old one to history
-    if (currentTrack && currentTrack.id !== song.id) {
-      setHistory(prev => [currentTrack, ...prev.slice(0, 20)])
-    }
+      // Save previous track to history
+      if (currentTrack && currentTrack.id !== song.id) {
+        setHistory((prev) => [currentTrack, ...prev.slice(0, 30)])
+      }
 
-    setCurrentTrack(song)
-    setDuration(song.duration)
-    setCurrentTime(0)
+      if (contextQueue) {
+        const remaining = contextQueue.filter((s) => s.id !== song.id)
+        setQueue(remaining)
+      }
 
-    if (contextQueue) {
-      const remaining = contextQueue.filter(s => s.id !== song.id)
-      setQueue(remaining)
-    }
+      let audioUrl = song.audioUrl
 
-    audioRef.current.src = song.audioUrl
-    audioRef.current.load()
-    audioRef.current
-      .play()
-      .then(() => {
-        setIsPlaying(true)
-      })
-      .catch(err => {
-        console.warn("Autoplay was prevented or audio failed:", err)
-        setIsPlaying(false)
-      })
-  }, [currentTrack])
+      if (!audioUrl) {
+        try {
+          const res = await spotifyApi.getTrack(song.id)
+          if (res.success && res.track?.preview_url) {
+            audioUrl = res.track.preview_url
+          } else {
+            audioUrl = FALLBACK_AUDIO_URL
+          }
+        } catch (e) {
+          console.warn("Failed to fetch track preview url:", e)
+          audioUrl = FALLBACK_AUDIO_URL
+        }
+      }
+
+      const updatedSong: Song = {
+        ...song,
+        audioUrl,
+      }
+
+      setCurrentTrack(updatedSong)
+      setDuration(song.duration)
+      setCurrentTime(0)
+
+      audioRef.current.src = audioUrl
+      audioRef.current.load()
+      audioRef.current
+        .play()
+        .then(() => {
+          setIsPlaying(true)
+        })
+        .catch((err) => {
+          console.warn("Autoplay prevented or stream issue:", err)
+          setIsPlaying(false)
+        })
+    },
+    [currentTrack]
+  )
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return
@@ -146,12 +223,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setIsPlaying(false)
     } else {
       if (!audioRef.current.src && currentTrack) {
-        audioRef.current.src = currentTrack.audioUrl
+        audioRef.current.src = currentTrack.audioUrl || FALLBACK_AUDIO_URL
       }
       audioRef.current
         .play()
         .then(() => setIsPlaying(true))
-        .catch(err => {
+        .catch((err) => {
           console.warn("Play failed:", err)
           setIsPlaying(false)
         })
@@ -182,7 +259,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setQueue(newQueue)
       playTrack(nextSong)
     } else if (repeatMode === "all" && history.length > 0) {
-      // Loop back to beginning
       const allSongs = [...history].reverse()
       if (currentTrack) allSongs.push(currentTrack)
       if (allSongs.length > 0) {
@@ -191,15 +267,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setHistory([])
         playTrack(first)
       }
-    } else {
-      // Default loop back to mock songs
-      const nextSong = MOCK_SONGS[0]
-      playTrack(nextSong, MOCK_SONGS.slice(1))
     }
   }, [queue, isShuffled, repeatMode, history, currentTrack, playTrack])
 
   const prevTrack = useCallback(() => {
-    // If more than 3 seconds in, restart the song
     if (audioRef.current && audioRef.current.currentTime > 3) {
       audioRef.current.currentTime = 0
       setCurrentTime(0)
@@ -208,9 +279,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     if (history.length > 0) {
       const prevSong = history[0]
-      setHistory(prev => prev.slice(1))
+      setHistory((prev) => prev.slice(1))
       if (currentTrack) {
-        setQueue(prev => [currentTrack, ...prev])
+        setQueue((prev) => [currentTrack, ...prev])
       }
       playTrack(prevSong)
     } else if (audioRef.current) {
@@ -219,7 +290,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [history, currentTrack, playTrack])
 
-  // Handle track ending with repeat logic
+  // Track ending logic
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -246,13 +317,16 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [])
 
-  const setVolume = useCallback((newVol: number) => {
-    const clamped = Math.max(0, Math.min(1, newVol))
-    setVolumeState(clamped)
-    if (clamped > 0 && isMuted) {
-      setIsMuted(false)
-    }
-  }, [isMuted])
+  const setVolume = useCallback(
+    (newVol: number) => {
+      const clamped = Math.max(0, Math.min(1, newVol))
+      setVolumeState(clamped)
+      if (clamped > 0 && isMuted) {
+        setIsMuted(false)
+      }
+    },
+    [isMuted]
+  )
 
   const toggleMute = useCallback(() => {
     if (isMuted) {
@@ -265,47 +339,61 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [isMuted, volume])
 
   const toggleShuffle = useCallback(() => {
-    setIsShuffled(prev => !prev)
+    setIsShuffled((prev) => !prev)
   }, [])
 
   const toggleRepeat = useCallback(() => {
-    setRepeatMode(prev => {
+    setRepeatMode((prev) => {
       if (prev === "off") return "all"
       if (prev === "all") return "one"
       return "off"
     })
   }, [])
 
-  const toggleLike = useCallback((songId: string) => {
-    setLikedSongIds(prev => {
-      const next = new Set(prev)
-      if (next.has(songId)) {
-        next.delete(songId)
-      } else {
-        next.add(songId)
-      }
-      return next
-    })
-  }, [])
+  const toggleLike = useCallback(
+    (songOrId: string | Song, songData?: Song) => {
+      const id = typeof songOrId === "string" ? songOrId : songOrId.id
+      const resolvedSong: Song | null =
+        typeof songOrId === "object"
+          ? songOrId
+          : songData || (currentTrack?.id === id ? currentTrack : null)
+
+      setLikedSongIds((prev) => {
+        const next = new Set(prev)
+        if (next.has(id)) {
+          next.delete(id)
+        } else {
+          next.add(id)
+        }
+        return next
+      })
+
+      setLikedSongs((prev) => {
+        if (prev.some((s) => s.id === id)) {
+          return prev.filter((s) => s.id !== id)
+        } else if (resolvedSong) {
+          return [resolvedSong, ...prev]
+        }
+        return prev
+      })
+    },
+    [currentTrack]
+  )
 
   const addToQueue = useCallback((song: Song) => {
-    setQueue(prev => [...prev, song])
+    setQueue((prev) => [...prev, song])
   }, [])
 
   const removeFromQueue = useCallback((index: number) => {
-    setQueue(prev => prev.filter((_, i) => i !== index))
-  }, [])
-
-  const toggleLyrics = useCallback(() => {
-    setLyricsOpen(prev => !prev)
+    setQueue((prev) => prev.filter((_, i) => i !== index))
   }, [])
 
   const toggleRightSidebar = useCallback(() => {
-    setRightSidebarOpen(prev => !prev)
+    setRightSidebarOpen((prev) => !prev)
   }, [])
 
   const toggleQueue = useCallback(() => {
-    setQueueOpen(prev => !prev)
+    setQueueOpen((prev) => !prev)
   }, [])
 
   return (
@@ -322,7 +410,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isShuffled,
         repeatMode,
         likedSongIds,
-        isLyricsOpen,
+        likedSongs,
         isRightSidebarOpen,
         isQueueOpen,
         playTrack,
@@ -339,8 +427,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toggleLike,
         addToQueue,
         removeFromQueue,
-        setLyricsOpen,
-        toggleLyrics,
         setRightSidebarOpen,
         toggleRightSidebar,
         setQueueOpen,

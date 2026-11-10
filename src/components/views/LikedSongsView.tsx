@@ -1,6 +1,5 @@
 import React from "react"
 import { Heart } from "lucide-react"
-import { MOCK_SONGS } from "@/data/mockData"
 import { ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { HeroHeader } from "@/components/common/HeroHeader"
@@ -12,9 +11,8 @@ interface LikedSongsViewProps {
 }
 
 export const LikedSongsView: React.FC<LikedSongsViewProps> = ({ onNavigate }) => {
-  const { likedSongIds, currentTrack, isPlaying, playTrack, togglePlay } = usePlayer()
+  const { likedSongs, currentTrack, isPlaying, playTrack, togglePlay } = usePlayer()
 
-  const likedSongs = MOCK_SONGS.filter((s) => likedSongIds.has(s.id))
   const isPlayingLiked =
     likedSongs.some((s) => s.id === currentTrack?.id) && isPlaying
 

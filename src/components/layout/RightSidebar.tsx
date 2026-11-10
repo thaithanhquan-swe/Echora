@@ -1,7 +1,6 @@
 import React from "react"
 import { X, ListMusic } from "lucide-react"
 import { usePlayer } from "@/context/PlayerContext"
-import { MOCK_ARTISTS } from "@/data/mockData"
 import { ViewType } from "@/types/music"
 import { NowPlayingView } from "@/components/sidebar/NowPlayingView"
 import { QueueListView } from "@/components/sidebar/QueueListView"
@@ -30,7 +29,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
     return null
   }
 
-  const artist = MOCK_ARTISTS.find((a) => a.id === currentTrack?.artistId)
   const isLiked = currentTrack ? likedSongIds.has(currentTrack.id) : false
 
   return (
@@ -71,7 +69,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ onNavigate }) => {
           currentTrack && (
             <NowPlayingView
               currentTrack={currentTrack}
-              artist={artist}
               isLiked={isLiked}
               queue={queue}
               onToggleLike={toggleLike}

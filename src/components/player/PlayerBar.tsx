@@ -21,7 +21,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({ onNavigate }) => {
     isShuffled,
     repeatMode,
     likedSongIds,
-    isLyricsOpen,
     isRightSidebarOpen,
     isQueueOpen,
     togglePlay,
@@ -33,7 +32,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({ onNavigate }) => {
     toggleShuffle,
     toggleRepeat,
     toggleLike,
-    toggleLyrics,
     toggleRightSidebar,
     toggleQueue,
   } = usePlayer()
@@ -45,17 +43,17 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({ onNavigate }) => {
   const isLiked = likedSongIds.has(currentTrack.id)
 
   return (
-    <footer className="h-20 w-full bg-black border-t border-neutral-900/60 px-4 flex items-center justify-between select-none z-40">
-      {/* 1. Track Info (Left) */}
+    <footer className="h-20 sm:h-[88px] w-full bg-black border-t border-neutral-900 px-4 flex items-center justify-between text-white select-none z-40 shrink-0">
+      {/* 1. Track Info (Left - min 200px) */}
       <PlayerTrackInfo
         currentTrack={currentTrack}
         isLiked={isLiked}
-        onToggleLike={toggleLike}
+        onToggleLike={() => toggleLike(currentTrack.id, currentTrack)}
         onNavigate={onNavigate}
       />
 
-      {/* 2. Playback Controls & Progress Bar (Center) - Roomy and centered */}
-      <div className="flex flex-col items-center max-w-2xl w-[44%] px-4">
+      {/* 2. Playback Controls & Progress Bar (Center - 40% width) */}
+      <div className="flex flex-col items-center max-w-xl w-[40%] px-4">
         <PlayerControls
           isPlaying={isPlaying}
           isShuffled={isShuffled}
@@ -74,14 +72,12 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({ onNavigate }) => {
         />
       </div>
 
-      {/* 3. Extra Controls & Volume (Right) - Bigger icons matching Spotify */}
+      {/* 3. Extra Controls: Queue, Volume, Fullscreen (Right - 30% width) */}
       <PlayerExtraControls
-        isLyricsOpen={isLyricsOpen}
         isRightSidebarOpen={isRightSidebarOpen}
         isQueueOpen={isQueueOpen}
         volume={volume}
         isMuted={isMuted}
-        onToggleLyrics={toggleLyrics}
         onToggleRightSidebar={toggleRightSidebar}
         onToggleQueue={toggleQueue}
         onVolumeChange={setVolume}

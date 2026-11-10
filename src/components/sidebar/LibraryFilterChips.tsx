@@ -1,7 +1,7 @@
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 
-export type LibraryFilterType = "all" | "playlists" | "albums" | "podcasts"
+export type LibraryFilterType = "all" | "playlists" | "artists" | "albums"
 
 interface LibraryFilterChipsProps {
   filter: LibraryFilterType
@@ -33,19 +33,19 @@ export const LibraryFilterChips: React.FC<LibraryFilterChipsProps> = ({
       </Badge>
 
       <Badge
+        variant={filter === "artists" ? "active" : "default"}
+        onClick={() => onSelectFilter(filter === "artists" ? "all" : "artists")}
+        className="cursor-pointer shrink-0 py-1.5 px-3 text-xs font-semibold"
+      >
+        Artists
+      </Badge>
+
+      <Badge
         variant={filter === "albums" ? "active" : "default"}
         onClick={() => onSelectFilter(filter === "albums" ? "all" : "albums")}
         className="cursor-pointer shrink-0 py-1.5 px-3 text-xs font-semibold"
       >
         Albums
-      </Badge>
-
-      <Badge
-        variant={filter === "podcasts" ? "active" : "default"}
-        onClick={() => onSelectFilter(filter === "podcasts" ? "all" : "podcasts")}
-        className="cursor-pointer shrink-0 py-1.5 px-3 text-xs font-semibold"
-      >
-        Podcasts
       </Badge>
     </div>
   )

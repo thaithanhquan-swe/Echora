@@ -52,6 +52,15 @@ export interface Playlist {
   isPinned?: boolean
 }
 
+export interface RadioStation {
+  id: string
+  title: string
+  artistImageUrl: string
+  color: string
+  description: string
+  songs: Song[]
+}
+
 export interface Category {
   id: string
   title: string
