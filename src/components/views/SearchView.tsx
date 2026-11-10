@@ -13,6 +13,8 @@ import {
   mapApiPlaylistToPlaylist,
   mapApiAlbumToAlbum,
 } from "@/services/spotifyApi"
+import { searchAudiusTracks } from "@/services/audiusApi"
+import { searchFreeToUseTracks } from "@/services/freeToUseApi"
 import { Loader2 } from "lucide-react"
 
 interface SearchViewProps {
@@ -31,6 +33,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
   const [loading, setLoading] = useState(false)
   const [searchError, setSearchError] = useState(false)
   const [matchingSongs, setMatchingSongs] = useState<Song[]>([])
+  const [matchingPublicSongs, setMatchingPublicSongs] = useState<Song[]>([])
   const [matchingArtists, setMatchingArtists] = useState<Artist[]>([])
   const [matchingPlaylists, setMatchingPlaylists] = useState<Playlist[]>([])
   const [matchingAlbums, setMatchingAlbums] = useState<Album[]>([])
@@ -41,6 +44,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
     if (!trimmedQuery) {
       setSearchError(false)
       setMatchingSongs([])
+      setMatchingPublicSongs([])
       setMatchingArtists([])
       setMatchingPlaylists([])
       setMatchingAlbums([])
@@ -50,10 +54,22 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
     setLoading(true)
     setSearchError(false)
+    setMatchingPublicSongs([])
     const timeout = setTimeout(() => {
       const promises: Promise<any>[] = []
 
       if (activeTab === "all" || activeTab === "tracks") {
+        promises.push(
+          Promise.all([
+            searchAudiusTracks(trimmedQuery, 10).catch(() => []),
+            searchFreeToUseTracks(trimmedQuery, 10).catch(() => []),
+          ]).then(([audiusSongs, freeToUseSongs]) => {
+            const unique = new Map<string, Song>()
+            ;[...audiusSongs, ...freeToUseSongs].forEach((song) => unique.set(song.id, song))
+            setMatchingPublicSongs(Array.from(unique.values()))
+          })
+        )
+
         promises.push(
           spotifyApi
             .search(trimmedQuery, "track", activeTab === "tracks" ? 15 : 8)
@@ -146,6 +162,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
   const hasAnyResults =
     matchingSongs.length > 0 ||
+    matchingPublicSongs.length > 0 ||
     matchingArtists.length > 0 ||
     matchingPlaylists.length > 0 ||
     matchingAlbums.length > 0
@@ -220,6 +237,29 @@ export const SearchView: React.FC<SearchViewProps> = ({
             </div>
           ) : (
             <div className="space-y-8">
+              {(activeTab === "all" || activeTab === "tracks") && matchingPublicSongs.length > 0 && (
+                <section>
+                  <p className="mb-1 text-xs font-medium text-spotify-subdued">
+                    Public audio · stream trọn bài ngay trong Echora
+                  </p>
+                  <h3 className="mb-3 text-xl font-bold tracking-tight text-white">
+                    Bản đầy đủ có thể phát
+                  </h3>
+                  <div className="space-y-1">
+                    {matchingPublicSongs.map((song, index) => (
+                      <TrackRow
+                        key={song.id}
+                        song={song}
+                        index={index}
+                        contextSongs={matchingPublicSongs}
+                        showAlbum={false}
+                        showDateAdded={false}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* All or Tracks: Top Result & Songs List */}
               {(activeTab === "all" || activeTab === "tracks") && matchingSongs.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

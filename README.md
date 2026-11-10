@@ -109,10 +109,4 @@ Echora/
 ├── tsconfig.json
 └── vite.config.ts
 ```
-# Full-track YouTube fallback
-
-Set `VITE_YOUTUBE_API_KEY` in the local `.env` file and in Vercel Project Settings → Environment Variables. Enable the YouTube Data API v3 for the Google Cloud project and restrict the key to the deployed site’s HTTP referrers and the YouTube Data API. Re-deploy after adding or changing the variable.
-
-The player uses Audius and Free To Use when an exact, non-premium full-track match is available. Otherwise, “Nghe trọn bài” searches for an embeddable YouTube video matching the title and artist, then plays it in YouTube’s embedded player. The Spotify API only supplies short previews, so Echora does not auto-play a preview when no full source matches.
-
-Free To Use requires visible attribution to the track, artist and Free To Use, and its no-cost license is limited to non-commercial apps. Review the [license](https://freetouse.com/license) before enabling it for a commercial product.
+The player streams full audio directly from Audius and Free To Use when an exact public track match is available. Spotify remains a metadata source only; Echora does not play its short preview clips. Free To Use tracks display source attribution and are limited to non-commercial apps under its no-cost license. Review the [license](https://freetouse.com/license) before using it commercially.

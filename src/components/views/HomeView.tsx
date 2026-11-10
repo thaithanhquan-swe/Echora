@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { ViewType, Playlist, Artist, Album, Song } from "@/types/music"
 import { QuickPickCard } from "@/components/common/QuickPickCard"
 import { MediaCard } from "@/components/common/MediaCard"
+import { TrackRow } from "@/components/common/TrackRow"
 import { Badge } from "@/components/ui/badge"
 import { usePlayer } from "@/context/PlayerContext"
 import {
@@ -11,6 +12,7 @@ import {
   mapApiAlbumToAlbum,
   mapApiTrackToSong,
 } from "@/services/spotifyApi"
+import { getTrendingAudiusTracks } from "@/services/audiusApi"
 import { Loader2 } from "lucide-react"
 
 interface HomeViewProps {
@@ -29,6 +31,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [artists, setArtists] = useState<Artist[]>([])
   const [albums, setAlbums] = useState<Album[]>([])
+  const [publicSongs, setPublicSongs] = useState<Song[]>([])
 
   useEffect(() => {
     let isMounted = true
@@ -45,12 +48,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
       spotifyApi.search("Son Tung M-TP", "artist", 5).catch(() => null),
       // Popular albums
       spotifyApi.search("V-Pop", "album", 6).catch(() => null),
+      // Public full tracks available for in-app playback
+      getTrendingAudiusTracks(10).catch(() => []),
     ])
-      .then(([tracksRes, playlistsRes, artistRes1, artistRes2, albumsRes]) => {
+      .then(([tracksRes, playlistsRes, artistRes1, artistRes2, albumsRes, publicTrackResults]) => {
         if (!isMounted) return
         if (
           ![tracksRes, artistRes1, artistRes2, albumsRes].some(Boolean) &&
-          playlistsRes.length === 0
+          playlistsRes.length === 0 &&
+          publicTrackResults.length === 0
         ) {
           setLoadError(true)
           return
@@ -80,6 +86,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         if (albumsRes?.success && Array.isArray(albumsRes.results)) {
           setAlbums(albumsRes.results.map((a) => mapApiAlbumToAlbum(a)))
         }
+        setPublicSongs(publicTrackResults)
       })
       .catch((err) => {
         console.error("HomeView data loading error:", err)
@@ -152,8 +159,32 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         <>
           {loadError && (
             <p className="py-8 text-center text-sm text-spotify-subdued">
-              Không thể tải danh mục Spotify. Vui lòng thử lại sau.
+              Danh mục Spotify không phản hồi; các track public vẫn có thể phát bên dưới.
             </p>
+          )}
+          {(filter === "all" || filter === "music") && publicSongs.length > 0 && (
+            <div>
+              <div className="mb-3">
+                <p className="mb-1 text-xs font-medium text-spotify-subdued">
+                  Stream trực tiếp từ catalog public, không phải preview.
+                </p>
+                <h2 className="text-2xl font-bold tracking-tight text-white">
+                  Nhạc thịnh hành nghe trọn bài trong Echora
+                </h2>
+              </div>
+              <div className="space-y-1">
+                {publicSongs.slice(0, 10).map((song, index) => (
+                  <TrackRow
+                    key={song.id}
+                    song={song}
+                    index={index}
+                    contextSongs={publicSongs}
+                    showAlbum={false}
+                    showDateAdded={false}
+                  />
+                ))}
+              </div>
+            </div>
           )}
           {/* 2. Quick Picks 8-card grid */}
           {(filter === "all" || filter === "music") && quickPicks.length > 0 && (
