@@ -54,22 +54,30 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({ onNavigate }) => {
 
       {/* 2. Playback Controls & Progress Bar (Center - 40% width) */}
       <div className="flex flex-col items-center max-w-xl w-[40%] px-4">
-        <PlayerControls
-          isPlaying={isPlaying}
-          isShuffled={isShuffled}
-          repeatMode={repeatMode}
-          onTogglePlay={togglePlay}
-          onPrevTrack={prevTrack}
-          onNextTrack={nextTrack}
-          onToggleShuffle={toggleShuffle}
-          onToggleRepeat={toggleRepeat}
-        />
+        {currentTrack.playbackSource === "youtube" ? (
+          <span className="text-xs text-spotify-subdued">Đang phát YouTube · dùng điều khiển trong video</span>
+        ) : currentTrack.playbackSource === "unavailable" ? (
+          <span className="text-xs text-spotify-subdued">Chọn “Nghe trọn bài” để mở nguồn phát đầy đủ</span>
+        ) : (
+          <>
+            <PlayerControls
+              isPlaying={isPlaying}
+              isShuffled={isShuffled}
+              repeatMode={repeatMode}
+              onTogglePlay={togglePlay}
+              onPrevTrack={prevTrack}
+              onNextTrack={nextTrack}
+              onToggleShuffle={toggleShuffle}
+              onToggleRepeat={toggleRepeat}
+            />
 
-        <ProgressBar
-          currentTime={currentTime}
-          duration={duration}
-          onSeek={seekTo}
-        />
+            <ProgressBar
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={seekTo}
+            />
+          </>
+        )}
       </div>
 
       {/* 3. Extra Controls: Queue, Volume, Fullscreen (Right - 30% width) */}

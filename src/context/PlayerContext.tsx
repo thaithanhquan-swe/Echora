@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react"
 import { Song } from "@/types/music"
-import { spotifyApi } from "@/services/spotifyApi"
 import { findAudiusTrackStream } from "@/services/audiusApi"
+import { findFreeToUseStream } from "@/services/freeToUseApi"
 
 export type RepeatMode = "off" | "all" | "one"
 
@@ -23,6 +23,7 @@ interface PlayerContextType {
 
   // Actions
   playTrack: (song: Song, contextQueue?: Song[]) => Promise<void>
+  setPlaybackSource: (source: Song["playbackSource"]) => void
   togglePlay: () => void
   pause: () => void
   resume: () => void
@@ -193,25 +194,22 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (audioUrl) playbackSource = "audius"
       } catch (e) {
         if (request.signal.aborted) return
-        console.info("Audius full-track lookup failed; falling back to Spotify preview.", e)
+        console.info("Audius full-track lookup failed; trying Free To Use.", e)
       }
 
       if (request.signal.aborted || playbackRequestRef.current !== request) return
 
       if (!audioUrl) {
-        audioUrl = song.audioUrl
-        if (!audioUrl) {
-          try {
-            const res = await spotifyApi.getTrack(song.id)
-            if (request.signal.aborted || playbackRequestRef.current !== request) return
-            audioUrl = res.success ? res.track?.preview_url || "" : ""
-          } catch (e) {
-            if (request.signal.aborted) return
-            console.warn("Failed to fetch track preview url:", e)
-          }
+        try {
+          audioUrl = await findFreeToUseStream(song.title, song.artist, song.duration, request.signal) || ""
+          if (audioUrl) playbackSource = "freetouse"
+        } catch (e) {
+          if (request.signal.aborted) return
+          console.info("Free To Use full-track lookup failed.", e)
         }
-        playbackSource = audioUrl ? "spotify-preview" : "unavailable"
       }
+
+      if (request.signal.aborted || playbackRequestRef.current !== request) return
 
       const updatedSong: Song = {
         ...song,
@@ -224,7 +222,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setCurrentTime(0)
 
       if (!audioUrl) {
-        console.info("No full Audius track or Spotify preview is available for this song.")
+        console.info("No full-track match is available from Audius or Free To Use.")
         return
       }
 
@@ -248,7 +246,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current || !currentTrack) return
-    if (currentTrack.playbackSource === "unavailable") return
+    if (currentTrack.playbackSource === "unavailable" || currentTrack.playbackSource === "youtube") return
 
     if (isPlaying) {
       audioRef.current.pause()
@@ -273,6 +271,22 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         })
     }
   }, [isPlaying, currentTrack])
+
+  const setPlaybackSource = useCallback((source: Song["playbackSource"]) => {
+    if (source === "youtube" || source === "unavailable") {
+      audioRef.current?.pause()
+      audioRef.current?.removeAttribute("src")
+      audioRef.current?.load()
+      setIsPlaying(false)
+      setCurrentTime(0)
+      setDuration(0)
+    }
+    setCurrentTrack((track) =>
+      track
+        ? { ...track, audioUrl: source === "audius" ? track.audioUrl : "", playbackSource: source }
+        : track
+    )
+  }, [])
 
   const pause = useCallback(() => {
     if (audioRef.current) {
@@ -443,6 +457,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isRightSidebarOpen,
         isQueueOpen,
         playTrack,
+        setPlaybackSource,
         togglePlay,
         pause,
         resume,

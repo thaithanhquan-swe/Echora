@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { PlusCircle, CheckCircle2, ExternalLink, X } from "lucide-react"
 import { Song, ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
@@ -21,8 +21,19 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
   const [youtubeError, setYoutubeError] = useState<string | null>(null)
   const [isSearchingYouTube, setIsSearchingYouTube] = useState(false)
-  const { pause } = usePlayer()
+  const attemptedTrackIdRef = useRef<string | null>(null)
+  const { pause, setPlaybackSource } = usePlayer()
   const spotifyTrackUrl = `https://open.spotify.com/track/${encodeURIComponent(currentTrack.id)}`
+
+  useEffect(() => {
+    if (
+      currentTrack.playbackSource !== "unavailable" ||
+      attemptedTrackIdRef.current === currentTrack.id
+    ) return
+
+    attemptedTrackIdRef.current = currentTrack.id
+    setIsFullTrackOpen(true)
+  }, [currentTrack.id, currentTrack.playbackSource])
 
   useEffect(() => {
     if (!isFullTrackOpen) return
@@ -32,10 +43,14 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
     setYoutubeError(null)
     setIsSearchingYouTube(true)
     findYouTubeVideo(currentTrack, controller.signal)
-      .then(setYoutubeVideoId)
+      .then((videoId) => {
+        setYoutubeVideoId(videoId)
+        setPlaybackSource("youtube")
+      })
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
           setYoutubeError(error instanceof Error ? error.message : "Không thể tìm video YouTube.")
+          setPlaybackSource("unavailable")
         }
       })
       .finally(() => {
@@ -43,7 +58,7 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
       })
 
     return () => controller.abort()
-  }, [isFullTrackOpen, currentTrack.id])
+  }, [isFullTrackOpen, currentTrack.id, setPlaybackSource])
 
   return (
     <div className="flex items-center gap-3.5 w-[30%] min-w-[180px] max-w-[360px] select-none">
@@ -74,13 +89,18 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
           <span>
             {currentTrack.playbackSource === "audius"
               ? "Bản đầy đủ · Audius"
+              : currentTrack.playbackSource === "freetouse"
+                ? "Bản đầy đủ · Free To Use"
               : currentTrack.playbackSource === "unavailable"
                 ? "Chưa có nguồn phát phù hợp"
-                : "Bản nghe thử · Spotify"}
+                : currentTrack.playbackSource === "youtube"
+                  ? "Bản đầy đủ · YouTube"
+                  : "Bản nghe thử · Spotify"}
           </span>
           <button
             onClick={() => {
               pause()
+              setPlaybackSource("unavailable")
               setIsFullTrackOpen(true)
             }}
             className="inline-flex items-center gap-0.5 text-spotify-green hover:underline"
@@ -89,6 +109,16 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
             Nghe trọn bài
           </button>
         </span>
+        {currentTrack.playbackSource === "freetouse" && (
+          <a
+            href="https://freetouse.com/music"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[10px] text-spotify-green hover:underline"
+          >
+            Free To Use · nghe miễn phí
+          </a>
+        )}
       </div>
 
       {/* Echora "+" / Add to Library button from screenshot */}
