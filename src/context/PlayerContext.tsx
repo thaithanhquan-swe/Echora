@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react"
 import { Song } from "@/types/music"
-import { spotifyApi, FALLBACK_AUDIO_URL } from "@/services/spotifyApi"
+import { spotifyApi } from "@/services/spotifyApi"
 
 export type RepeatMode = "off" | "all" | "one"
 
@@ -222,11 +222,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           if (res.success && res.track?.preview_url) {
             audioUrl = res.track.preview_url
           } else {
-            audioUrl = FALLBACK_AUDIO_URL
+            console.info("No Spotify preview is available for this track.")
+            return
           }
         } catch (e) {
           console.warn("Failed to fetch track preview url:", e)
-          audioUrl = FALLBACK_AUDIO_URL
+          return
         }
       }
 
