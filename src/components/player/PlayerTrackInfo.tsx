@@ -1,7 +1,8 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { PlusCircle, CheckCircle2, ExternalLink, X } from "lucide-react"
 import { Song, ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
+import { findYouTubeVideo } from "@/services/youtubeApi"
 
 interface PlayerTrackInfoProps {
   currentTrack: Song
@@ -16,9 +17,33 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
   onToggleLike,
   onNavigate,
 }) => {
-  const [isSpotifyEmbedOpen, setIsSpotifyEmbedOpen] = useState(false)
+  const [isFullTrackOpen, setIsFullTrackOpen] = useState(false)
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
+  const [youtubeError, setYoutubeError] = useState<string | null>(null)
+  const [isSearchingYouTube, setIsSearchingYouTube] = useState(false)
   const { pause } = usePlayer()
   const spotifyTrackUrl = `https://open.spotify.com/track/${encodeURIComponent(currentTrack.id)}`
+
+  useEffect(() => {
+    if (!isFullTrackOpen) return
+
+    const controller = new AbortController()
+    setYoutubeVideoId(null)
+    setYoutubeError(null)
+    setIsSearchingYouTube(true)
+    findYouTubeVideo(currentTrack, controller.signal)
+      .then(setYoutubeVideoId)
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          setYoutubeError(error instanceof Error ? error.message : "Không thể tìm video YouTube.")
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsSearchingYouTube(false)
+      })
+
+    return () => controller.abort()
+  }, [isFullTrackOpen, currentTrack.id])
 
   return (
     <div className="flex items-center gap-3.5 w-[30%] min-w-[180px] max-w-[360px] select-none">
@@ -56,10 +81,10 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
           <button
             onClick={() => {
               pause()
-              setIsSpotifyEmbedOpen(true)
+              setIsFullTrackOpen(true)
             }}
             className="inline-flex items-center gap-0.5 text-spotify-green hover:underline"
-            aria-label="Mở trình phát Spotify để nghe trọn bài"
+            aria-label="Tìm và phát bản đầy đủ trên YouTube"
           >
             Nghe trọn bài
           </button>
@@ -79,44 +104,67 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
         )}
       </button>
 
-      {isSpotifyEmbedOpen && (
+      {isFullTrackOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setIsSpotifyEmbedOpen(false)
+            if (event.target === event.currentTarget) setIsFullTrackOpen(false)
           }}
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-label={`Nghe trọn bài ${currentTrack.title}`}
-            className="w-full max-w-md rounded-xl border border-neutral-700 bg-neutral-900 p-4 shadow-2xl"
+            className="w-full max-w-2xl rounded-xl border border-neutral-700 bg-neutral-900 p-4 shadow-2xl"
           >
             <div className="mb-3 flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <h2 className="truncate text-sm font-bold text-white">Nghe trọn bài</h2>
+                <h2 className="truncate text-sm font-bold text-white">Nghe trọn bài trên YouTube</h2>
                 <p className="truncate text-xs text-neutral-400">
                   {currentTrack.title} · {currentTrack.artist}
                 </p>
               </div>
               <button
-                onClick={() => setIsSpotifyEmbedOpen(false)}
+                onClick={() => setIsFullTrackOpen(false)}
                 className="rounded p-1 text-neutral-400 hover:bg-neutral-800 hover:text-white"
-                aria-label="Đóng trình phát Spotify"
+                aria-label="Đóng trình phát YouTube"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <iframe
-              title={`Spotify player: ${currentTrack.title}`}
-              src={`https://open.spotify.com/embed/track/${encodeURIComponent(currentTrack.id)}?utm_source=generator&theme=0`}
-              width="100%"
-              height="152"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-              className="overflow-hidden rounded-lg border-0"
-            />
+            {isSearchingYouTube && (
+              <div className="flex h-56 items-center justify-center rounded-lg bg-neutral-950 text-sm text-neutral-400">
+                Đang tìm bản đầy đủ...
+              </div>
+            )}
+
+            {youtubeVideoId && (
+              <iframe
+                title={`YouTube player: ${currentTrack.title}`}
+                src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeVideoId)}?autoplay=1&playsinline=1&rel=0`}
+                width="100%"
+                height="360"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowFullScreen
+                loading="eager"
+                className="overflow-hidden rounded-lg border-0"
+              />
+            )}
+
+            {youtubeError && (
+              <div className="rounded-lg bg-neutral-950 p-4 text-sm text-neutral-300">
+                <p>{youtubeError}</p>
+                <a
+                  href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${currentTrack.title} ${currentTrack.artist} official audio`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 text-spotify-green hover:underline"
+                >
+                  Tìm trên YouTube <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            )}
 
             <a
               href={spotifyTrackUrl}

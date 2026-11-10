@@ -109,3 +109,8 @@ Echora/
 ├── tsconfig.json
 └── vite.config.ts
 ```
+# Full-track YouTube fallback
+
+Set `VITE_YOUTUBE_API_KEY` in the local `.env` file and in Vercel Project Settings → Environment Variables. Enable the YouTube Data API v3 for the Google Cloud project and restrict the key to the deployed site’s HTTP referrers and the YouTube Data API. Re-deploy after adding or changing the variable.
+
+The player uses Audius when an exact full-track match is available. Otherwise, the “Nghe trọn bài” dialog searches for an embeddable YouTube video matching the title and artist, then plays it in YouTube’s embedded player. Spotify preview remains a short fallback in the bottom player.

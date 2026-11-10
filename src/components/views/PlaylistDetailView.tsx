@@ -22,6 +22,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
   const [playlist, setPlaylist] = useState<Playlist | null>(initialPlaylist || null)
   const [loading, setLoading] = useState<boolean>(!initialPlaylist || Boolean(playlistId))
   const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
 
   const targetId = playlistId || initialPlaylist?.id
 
@@ -49,7 +50,9 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
       .catch((err) => {
         if (!isMounted) return
         console.error("Error fetching playlist:", err)
-        setError("Lỗi kết nối tới máy chủ Echora.")
+        setError(
+          `Không tải được playlist từ API catalog${err instanceof Error ? `: ${err.message}` : "."}`
+        )
       })
       .finally(() => {
         if (isMounted) setLoading(false)
@@ -58,7 +61,7 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
     return () => {
       isMounted = false
     }
-  }, [targetId])
+  }, [targetId, retryCount])
 
   if (loading && !playlist) {
     return (
@@ -78,6 +81,12 @@ export const PlaylistDetailView: React.FC<PlaylistDetailViewProps> = ({
           className="text-spotify-green font-bold text-sm hover:underline"
         >
           Quay lại trang chủ
+        </button>
+        <button
+          onClick={() => setRetryCount((count) => count + 1)}
+          className="ml-4 text-spotify-green font-bold text-sm hover:underline"
+        >
+          Thử tải lại
         </button>
       </div>
     )
