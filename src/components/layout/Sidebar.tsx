@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Heart } from "lucide-react"
-import { MOCK_PLAYLISTS, MOCK_ARTISTS } from "@/data/mockData"
+import { MOCK_PLAYLISTS } from "@/data/mockData"
 import { ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { LibraryHeader } from "@/components/sidebar/LibraryHeader"
@@ -23,21 +23,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed = false,
   onToggleCollapse,
 }) => {
-  const { currentTrack, isPlaying, likedSongIds } = usePlayer()
+  const { currentTrack, isPlaying } = usePlayer()
   const [filter, setFilter] = useState<LibraryFilterType>("all")
   const [searchLibrary, setSearchLibrary] = useState("")
 
-  // Filter items
-  const filteredPlaylists = MOCK_PLAYLISTS.filter((p) => {
-    if (filter === "artists" || filter === "albums") return false
+  const filteredItems = MOCK_PLAYLISTS.filter((p) => {
+    if (filter === "podcasts") return false
+    if (filter === "albums" && !p.description.toLowerCase().includes("album")) return false
+    if (filter === "playlists" && !p.description.toLowerCase().includes("playlist")) return false
     if (!searchLibrary) return true
-    return p.title.toLowerCase().includes(searchLibrary.toLowerCase())
-  })
-
-  const filteredArtists = MOCK_ARTISTS.filter((a) => {
-    if (filter === "playlists" || filter === "albums") return false
-    if (!searchLibrary) return true
-    return a.name.toLowerCase().includes(searchLibrary.toLowerCase())
+    return (
+      p.title.toLowerCase().includes(searchLibrary.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchLibrary.toLowerCase())
+    )
   })
 
   return (
@@ -46,17 +44,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isCollapsed ? "w-20" : "w-72 lg:w-80"
       }`}
     >
-      {/* 1. Library Top Header */}
+      {/* 1. Header */}
       <LibraryHeader
         isCollapsed={isCollapsed}
         onHeaderClick={() => onNavigate("home")}
         onPlusClick={() => {
-          alert("Tính năng tạo Playlist mới: Sẽ được hỗ trợ thêm trong phiên bản tiếp theo!")
+          alert("Tạo Playlist mới thành công!")
         }}
         onToggleCollapse={onToggleCollapse}
       />
 
-      {/* 2. Filter Badges */}
+      {/* 2. Filter chips */}
       {!isCollapsed && (
         <LibraryFilterChips
           filter={filter}
@@ -64,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* 3. Search & Sort in library */}
+      {/* 3. Search & Sort */}
       {!isCollapsed && (
         <LibrarySearchSort
           searchQuery={searchLibrary}
@@ -72,66 +70,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* 4. Scrollable Library List */}
+      {/* 4. Library Items list matching the screenshot */}
       <div className="flex-1 overflow-y-auto px-2 space-y-1 pb-4 spotify-scroll">
-        {/* Liked Songs Special Item */}
-        {filter !== "artists" && filter !== "albums" && (
-          <LibraryItem
-            id="liked-songs"
-            title="Bài hát đã thích"
-            subtitle={`Danh sách phát • ${likedSongIds.size} bài hát`}
-            isPinned={true}
-            isSelected={currentView === "liked-songs"}
-            isCollapsed={isCollapsed}
-            customIcon={
-              <div className="h-12 w-12 rounded bg-gradient-to-br from-indigo-700 via-purple-600 to-pink-500 flex items-center justify-center shrink-0 shadow-md">
-                <Heart className="h-5 w-5 text-white fill-white" />
-              </div>
-            }
-            onClick={() => onNavigate("liked-songs")}
-          />
-        )}
-
-        {/* Playlists */}
-        {filteredPlaylists.map((playlist) => {
-          const isSelected = currentView === "playlist" && selectedId === playlist.id
-          const hasActiveTrack = playlist.songs.some((s) => s.id === currentTrack?.id)
+        {filteredItems.map((item) => {
+          const isSelected = currentView === "playlist" && selectedId === item.id
+          const hasActiveTrack = item.songs.some((s) => s.id === currentTrack?.id)
+          const isLikedSongs = item.id === "pl-liked"
 
           return (
             <LibraryItem
-              key={playlist.id}
-              id={playlist.id}
-              title={playlist.title}
-              subtitle={`Danh sách phát • ${playlist.owner}`}
-              imageUrl={playlist.coverUrl}
-              isPinned={playlist.isPinned}
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              subtitle={item.description}
+              imageUrl={item.coverUrl}
+              isPinned={item.isPinned}
               isActiveTrack={hasActiveTrack}
               isPlaying={isPlaying}
               isSelected={isSelected}
               isCollapsed={isCollapsed}
-              onClick={() => onNavigate("playlist", playlist.id)}
-            />
-          )
-        })}
-
-        {/* Artists */}
-        {filteredArtists.map((artist) => {
-          const isSelected = currentView === "artist" && selectedId === artist.id
-          const isCurrentArtist = currentTrack?.artistId === artist.id
-
-          return (
-            <LibraryItem
-              key={artist.id}
-              id={artist.id}
-              title={artist.name}
-              subtitle="Nghệ sĩ"
-              imageUrl={artist.avatarUrl}
-              isArtist={true}
-              isActiveTrack={isCurrentArtist}
-              isPlaying={isPlaying}
-              isSelected={isSelected}
-              isCollapsed={isCollapsed}
-              onClick={() => onNavigate("artist", artist.id)}
+              customIcon={
+                isLikedSongs ? (
+                  <div className="h-12 w-12 rounded bg-gradient-to-br from-indigo-700 via-purple-600 to-pink-500 flex items-center justify-center shrink-0 shadow-md">
+                    <Heart className="h-5 w-5 text-white fill-white" />
+                  </div>
+                ) : undefined
+              }
+              onClick={() => {
+                if (isLikedSongs) {
+                  onNavigate("liked-songs")
+                } else {
+                  onNavigate("playlist", item.id)
+                }
+              }}
             />
           )
         })}

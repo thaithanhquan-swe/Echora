@@ -1,178 +1,166 @@
-import React from "react"
-import { MOCK_PLAYLISTS, MOCK_ARTISTS, MOCK_ALBUMS, MOCK_SONGS } from "@/data/mockData"
+import React, { useState } from "react"
+import {
+  MOCK_SONGS,
+  RECOMMENDED_STATIONS,
+  POPULAR_RADIO,
+} from "@/data/mockData"
 import { ViewType } from "@/types/music"
 import { QuickPickCard } from "@/components/common/QuickPickCard"
-import { MediaCard } from "@/components/common/MediaCard"
-import { usePlayer } from "@/context/PlayerContext"
+import { RadioCard } from "@/components/common/RadioCard"
+import { Badge } from "@/components/ui/badge"
 
 interface HomeViewProps {
   onNavigate: (view: ViewType, id?: string) => void
 }
 
+type ContentFilter = "all" | "music" | "podcasts" | "audiobooks"
+
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
-  const { likedSongIds } = usePlayer()
+  const [filter, setFilter] = useState<ContentFilter>("all")
 
-  // Get dynamic greeting
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour >= 5 && hour < 12) return "Chào buổi sáng"
-    if (hour >= 12 && hour < 18) return "Chào buổi chiều"
-    return "Chào buổi tối"
-  }
-
-  const likedSongsList = MOCK_SONGS.filter((s) => likedSongIds.has(s.id))
-
+  // The 8 Quick Pick items from user's exact screenshot
   const quickPicks = [
     {
-      title: "Bài hát đã thích",
+      title: "ĐÔI CHÂN ĐI",
+      imageUrl: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=300&auto=format&fit=crop&q=80",
+      songs: [MOCK_SONGS[1]],
+      onClick: () => onNavigate("album", "album-doichandi"),
+    },
+    {
+      title: "Liked Songs",
       imageUrl: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&auto=format&fit=crop&q=80",
-      songs: likedSongsList,
+      songs: MOCK_SONGS,
       onClick: () => onNavigate("liked-songs"),
     },
     {
-      title: MOCK_PLAYLISTS[0].title,
-      imageUrl: MOCK_PLAYLISTS[0].coverUrl,
-      songs: MOCK_PLAYLISTS[0].songs,
-      onClick: () => onNavigate("playlist", MOCK_PLAYLISTS[0].id),
+      title: "Như Một Người Rưng",
+      imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&auto=format&fit=crop&q=80",
+      songs: [MOCK_SONGS[2]],
+      onClick: () => onNavigate("album", "album-hieu"),
     },
     {
-      title: MOCK_PLAYLISTS[1].title,
-      imageUrl: MOCK_PLAYLISTS[1].coverUrl,
-      songs: MOCK_PLAYLISTS[1].songs,
-      onClick: () => onNavigate("playlist", MOCK_PLAYLISTS[1].id),
+      title: "Ai Cũng Phải Bắt Đầu Từ Đâu Đó",
+      imageUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&auto=format&fit=crop&q=80",
+      songs: [MOCK_SONGS[3]],
+      onClick: () => onNavigate("album", "album-hieu"),
     },
     {
-      title: MOCK_ARTISTS[0].name,
-      imageUrl: MOCK_ARTISTS[0].avatarUrl,
-      songs: MOCK_ARTISTS[0].topSongs,
-      onClick: () => onNavigate("artist", MOCK_ARTISTS[0].id),
+      title: "ANH BỜ VAI (Ấn Bản KIM)",
+      imageUrl: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&auto=format&fit=crop&q=80",
+      songs: [MOCK_SONGS[4]],
+      onClick: () => onNavigate("album", "album-anhbovai"),
     },
     {
-      title: MOCK_ARTISTS[1].name,
-      imageUrl: MOCK_ARTISTS[1].avatarUrl,
-      songs: MOCK_ARTISTS[1].topSongs,
-      onClick: () => onNavigate("artist", MOCK_ARTISTS[1].id),
+      title: "Kiss It Better Radio",
+      imageUrl: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=300&auto=format&fit=crop&q=80",
+      songs: [MOCK_SONGS[5]],
+      onClick: () => onNavigate("home"),
     },
     {
-      title: MOCK_PLAYLISTS[2].title,
-      imageUrl: MOCK_PLAYLISTS[2].coverUrl,
-      songs: MOCK_PLAYLISTS[2].songs,
-      onClick: () => onNavigate("playlist", MOCK_PLAYLISTS[2].id),
+      title: "phonk",
+      imageUrl: "https://images.unsplash.com/photo-1445985543469-433ecdd6294c?w=300&auto=format&fit=crop&q=80",
+      songs: [MOCK_SONGS[6]],
+      onClick: () => onNavigate("playlist", "pl-phonk"),
+    },
+    {
+      title: "Chúng Ta Đều Muốn Một Thứ",
+      imageUrl: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300&auto=format&fit=crop&q=80",
+      songs: [MOCK_SONGS[7]],
+      onClick: () => onNavigate("artist", "artist-vu"),
     },
   ]
 
   return (
-    <div className="p-6 space-y-8 animate-in fade-in duration-300">
-      {/* Top Greeting & Quick 6-Grid */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight mb-5">
-          {getGreeting()}
-        </h1>
+    <div className="p-6 space-y-7 animate-in fade-in duration-300 select-none">
+      {/* 1. Top Content Filter Pills */}
+      <div className="flex items-center gap-2">
+        <Badge
+          variant={filter === "all" ? "active" : "default"}
+          onClick={() => setFilter("all")}
+          className="cursor-pointer py-1.5 px-4 text-xs font-bold"
+        >
+          All
+        </Badge>
+        <Badge
+          variant={filter === "music" ? "active" : "default"}
+          onClick={() => setFilter("music")}
+          className="cursor-pointer py-1.5 px-4 text-xs font-bold"
+        >
+          Music
+        </Badge>
+        <Badge
+          variant={filter === "podcasts" ? "active" : "default"}
+          onClick={() => setFilter("podcasts")}
+          className="cursor-pointer py-1.5 px-4 text-xs font-bold"
+        >
+          Podcasts
+        </Badge>
+        <Badge
+          variant={filter === "audiobooks" ? "active" : "default"}
+          onClick={() => setFilter("audiobooks")}
+          className="cursor-pointer py-1.5 px-4 text-xs font-bold"
+        >
+          Audiobooks
+        </Badge>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {quickPicks.map((item, idx) => (
-            <QuickPickCard
-              key={idx}
-              title={item.title}
-              imageUrl={item.imageUrl}
-              songs={item.songs}
-              onClick={item.onClick}
+      {/* 2. Quick Picks 8-card grid (2 rows x 4 columns) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+        {quickPicks.map((item, idx) => (
+          <QuickPickCard
+            key={idx}
+            title={item.title}
+            imageUrl={item.imageUrl}
+            songs={item.songs}
+            onClick={item.onClick}
+          />
+        ))}
+      </div>
+
+      {/* 3. Section 1: Recommended Stations */}
+      <div>
+        <div className="flex items-end justify-between mb-3">
+          <div>
+            <p className="text-xs text-spotify-subdued font-medium mb-1">
+              Non-stop music based on your favorite songs and artists.
+            </p>
+            <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
+              Recommended Stations
+            </h2>
+          </div>
+          <button className="text-xs font-bold text-spotify-subdued hover:underline hover:text-white transition-colors focus:outline-none">
+            Show all
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {RECOMMENDED_STATIONS.map((station) => (
+            <RadioCard
+              key={station.id}
+              station={station}
+              onClick={() => onNavigate("home")}
             />
           ))}
         </div>
       </div>
 
-      {/* Section 1: Made For You Playlists */}
+      {/* 4. Section 2: Popular radio */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
-              Dành Cho Bạn
-            </h2>
-            <p className="text-xs text-spotify-subdued mt-1">
-              Những danh sách phát tuyển chọn riêng theo sở thích của bạn
-            </p>
-          </div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
+            Popular radio
+          </h2>
           <button className="text-xs font-bold text-spotify-subdued hover:underline hover:text-white transition-colors focus:outline-none">
-            Hiện tất cả
+            Show all
           </button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {MOCK_PLAYLISTS.slice(0, 6).map((playlist) => (
-            <MediaCard
-              key={playlist.id}
-              id={playlist.id}
-              title={playlist.title}
-              subtitle={playlist.description}
-              imageUrl={playlist.coverUrl}
-              type="playlist"
-              songs={playlist.songs}
-              onClick={() => onNavigate("playlist", playlist.id)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Section 2: Popular Artists */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
-              Nghệ Sĩ Nổi Tiếng
-            </h2>
-            <p className="text-xs text-spotify-subdued mt-1">
-              Các nghệ sĩ đang thống trị các bảng xếp hạng âm nhạc
-            </p>
-          </div>
-          <button className="text-xs font-bold text-spotify-subdued hover:underline hover:text-white transition-colors focus:outline-none">
-            Hiện tất cả
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {MOCK_ARTISTS.slice(0, 6).map((artist) => (
-            <MediaCard
-              key={artist.id}
-              id={artist.id}
-              title={artist.name}
-              subtitle="Nghệ sĩ"
-              imageUrl={artist.avatarUrl}
-              type="artist"
-              songs={artist.topSongs}
-              onClick={() => onNavigate("artist", artist.id)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Section 3: Popular Albums & Singles */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
-              Album & Đĩa Đơn Phổ Biến
-            </h2>
-            <p className="text-xs text-spotify-subdued mt-1">
-              Những phát hành tạo nên làn sóng lớn gần đây
-            </p>
-          </div>
-          <button className="text-xs font-bold text-spotify-subdued hover:underline hover:text-white transition-colors focus:outline-none">
-            Hiện tất cả
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {MOCK_ALBUMS.map((album) => (
-            <MediaCard
-              key={album.id}
-              id={album.id}
-              title={album.title}
-              subtitle={`${album.releaseYear} • ${album.artist}`}
-              imageUrl={album.coverUrl}
-              type="album"
-              songs={album.songs}
-              onClick={() => onNavigate("album", album.id)}
+          {POPULAR_RADIO.map((station) => (
+            <RadioCard
+              key={station.id}
+              station={station}
+              onClick={() => onNavigate("home")}
             />
           ))}
         </div>

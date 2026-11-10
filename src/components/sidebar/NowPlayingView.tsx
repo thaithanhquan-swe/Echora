@@ -1,8 +1,7 @@
 import React from "react"
-import { MoreHorizontal } from "lucide-react"
+import { PlusCircle, MoreHorizontal } from "lucide-react"
 import { Song, Artist, ViewType } from "@/types/music"
 import { formatNumber } from "@/lib/utils"
-import { SpotifyHeartIcon } from "@/components/icons/SpotifyIcons"
 
 interface NowPlayingViewProps {
   currentTrack: Song
@@ -19,66 +18,83 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
   currentTrack,
   artist,
   isLiked,
-  queue,
   onToggleLike,
-  onOpenQueue,
-  onPlayTrack,
   onNavigate,
 }) => {
   return (
-    <div className="space-y-6 select-none">
-      {/* Big Album Artwork */}
-      <div className="relative aspect-square rounded-lg overflow-hidden shadow-2xl group">
+    <div className="space-y-5 select-none">
+      {/* 1. Big Album Artwork (Monochrome/Dark style matching screenshot) */}
+      <div className="relative aspect-square rounded-lg overflow-hidden shadow-2xl group bg-neutral-950">
         <img
           src={currentTrack.coverUrl}
           alt={currentTrack.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover filter contrast-125"
         />
       </div>
 
-      {/* Title & Artist & Like */}
+      {/* 2. Track Title, Artists & "+" Add Circle Button */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h2
             onClick={() => onNavigate && onNavigate("album", currentTrack.albumId)}
-            className="font-bold text-xl text-white hover:underline cursor-pointer truncate tracking-tight"
+            className="font-extrabold text-2xl text-white hover:underline cursor-pointer truncate tracking-tight"
           >
             {currentTrack.title}
           </h2>
           <p
             onClick={() => onNavigate && onNavigate("artist", currentTrack.artistId)}
-            className="text-spotify-subdued hover:text-white hover:underline cursor-pointer text-sm font-medium mt-0.5 transition-colors"
+            className="text-spotify-subdued hover:text-white hover:underline cursor-pointer text-sm font-semibold mt-0.5 transition-colors"
           >
             {currentTrack.artist}
           </p>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        {/* Spotify "+" in circle button from screenshot */}
+        <div className="flex items-center gap-1 shrink-0 pt-1">
           <button
             onClick={() => onToggleLike(currentTrack.id)}
-            className="p-2 text-spotify-subdued hover:text-white transition-colors focus:outline-none"
-            title={isLiked ? "Bỏ thích" : "Thích"}
+            className="text-spotify-subdued hover:text-white transition-colors focus:outline-none"
+            title={isLiked ? "Saved to Your Library" : "Add to Your Library"}
           >
-            <SpotifyHeartIcon size={20} filled={isLiked} />
+            <PlusCircle
+              className={`h-6 w-6 stroke-[1.8] ${
+                isLiked ? "text-spotify-green fill-spotify-green/20" : ""
+              }`}
+            />
           </button>
-          <button className="p-2 text-spotify-subdued hover:text-white transition-colors focus:outline-none">
+          <button className="text-spotify-subdued hover:text-white transition-colors focus:outline-none p-1">
             <MoreHorizontal className="h-5 w-5" />
           </button>
         </div>
       </div>
 
-      {/* About Artist Card */}
+      {/* 3. Lyrics Preview Card (Exact Dark Red/Burgundy card from user's screenshot) */}
+      <div className="rounded-xl p-5 bg-[#59161a] hover:bg-[#681a1f] transition-colors cursor-pointer group shadow-lg">
+        <p className="text-xs font-bold text-white/80 uppercase tracking-wider mb-3">
+          Lyrics preview
+        </p>
+        <div className="space-y-1.5 text-white font-extrabold text-lg sm:text-xl leading-snug tracking-tight">
+          <p className="line-clamp-2">
+            Tao chỉ như là nước thôi, mày định xiên vào đâu?
+          </p>
+          <p className="text-white/60">
+            Tao chỉ nói đúng một câu, "Em...
+          </p>
+        </div>
+      </div>
+
+      {/* 4. About the artist Card */}
       {artist && (
-        <div className="rounded-xl overflow-hidden bg-neutral-800/70 border border-neutral-700/50">
+        <div className="rounded-xl overflow-hidden bg-neutral-800/80 border border-neutral-700/40 shadow-lg">
           <div className="relative h-44 overflow-hidden">
             <img
               src={artist.bannerUrl}
               alt={artist.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover filter brightness-90"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/40 to-transparent" />
-            <span className="absolute top-3 left-3 text-xs font-bold uppercase tracking-wider text-white drop-shadow">
-              Thông tin về nghệ sĩ
+            <span className="absolute top-3 left-3 text-xs font-bold text-white drop-shadow">
+              About the artist
             </span>
           </div>
 
@@ -89,48 +105,12 @@ export const NowPlayingView: React.FC<NowPlayingViewProps> = ({
             >
               {artist.name}
             </h4>
-            <p className="text-xs text-spotify-subdued mt-1 font-medium">
-              {formatNumber(artist.monthlyListeners)} người nghe hàng tháng
+            <p className="text-xs text-spotify-subdued mt-1 font-semibold">
+              {formatNumber(artist.monthlyListeners)} monthly listeners
             </p>
             <p className="text-xs text-neutral-300 mt-3 line-clamp-3 leading-relaxed">
               {artist.bio}
             </p>
-          </div>
-        </div>
-      )}
-
-      {/* Next In Queue Preview */}
-      {queue.length > 0 && (
-        <div className="rounded-xl p-4 bg-neutral-800/50 border border-neutral-800">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-spotify-subdued">
-              Tiếp theo trong danh sách
-            </h4>
-            <button
-              onClick={onOpenQueue}
-              className="text-xs font-bold text-neutral-300 hover:text-white hover:underline focus:outline-none"
-            >
-              Mở hàng đợi
-            </button>
-          </div>
-
-          <div
-            onClick={() => onPlayTrack(queue[0])}
-            className="flex items-center gap-3 cursor-pointer group"
-          >
-            <img
-              src={queue[0].coverUrl}
-              alt={queue[0].title}
-              className="h-12 w-12 rounded object-cover shadow"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-white truncate group-hover:text-spotify-green transition-colors">
-                {queue[0].title}
-              </p>
-              <p className="text-xs text-spotify-subdued truncate">
-                {queue[0].artist}
-              </p>
-            </div>
           </div>
         </div>
       )}

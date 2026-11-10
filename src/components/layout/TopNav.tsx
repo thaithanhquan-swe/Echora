@@ -1,12 +1,10 @@
 import React, { useState } from "react"
 import {
-  ChevronLeft,
-  ChevronRight,
   Bell,
   Users,
-  ExternalLink,
-  Sparkles,
+  ArrowDownCircle,
   X,
+  Layers,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -41,75 +39,51 @@ export const TopNav: React.FC<TopNavProps> = ({
   onNavigate,
   searchQuery,
   onSearchChange,
-  canGoBack,
-  canGoForward,
-  onGoBack,
-  onGoForward,
 }) => {
   const [isFocused, setIsFocused] = useState(false)
 
   return (
     <header className="h-14 w-full flex items-center justify-between px-3 z-30 select-none bg-black">
-      {/* Left: Spotify Logo & History Navigation arrows */}
-      <div className="flex items-center gap-3">
-        {/* App Logo */}
-        <div
-          onClick={() => onNavigate("home")}
-          className="flex items-center gap-2.5 cursor-pointer group pr-2"
-        >
-          <SpotifyLogo
-            size={32}
-            className="text-spotify-green hover:scale-105 transition-transform"
-          />
-          <span className="font-extrabold text-lg tracking-tighter hidden sm:inline text-white group-hover:text-spotify-green transition-colors font-sans">
-            Spotify
-          </span>
-        </div>
-
-        {/* Back / Forward arrows */}
-        <div className="flex items-center gap-1.5 ml-1">
-          <button
-            onClick={onGoBack}
-            disabled={!canGoBack}
-            className="h-8 w-8 rounded-full bg-neutral-900/80 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors focus:outline-none"
-            title="Quay lại"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            onClick={onGoForward}
-            disabled={!canGoForward}
-            className="h-8 w-8 rounded-full bg-neutral-900/80 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors focus:outline-none"
-            title="Tiếp theo"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
+      {/* Left: Echora Project Logo */}
+      <div
+        onClick={() => onNavigate("home")}
+        className="flex items-center gap-2 cursor-pointer group pr-4 focus:outline-none"
+      >
+        <SpotifyLogo
+          size={32}
+          className="text-spotify-green hover:scale-105 transition-transform shrink-0"
+        />
+        <span className="font-black text-xl tracking-tighter text-white group-hover:text-spotify-green transition-colors font-sans">
+          Echora
+        </span>
       </div>
 
-      {/* Center: Home icon + Spotify-style Pill Search Bar */}
+      {/* Center: Home icon + Pill Search Bar */}
       <div className="flex items-center gap-2 max-w-lg w-full px-2">
+        {/* Home Button */}
         <button
           onClick={() => onNavigate("home")}
           className={`h-11 w-11 rounded-full flex items-center justify-center shrink-0 transition-all focus:outline-none ${
             currentView === "home"
-              ? "bg-white text-black font-bold scale-105 shadow-md"
+              ? "bg-neutral-800 text-white scale-105 shadow-md"
               : "bg-neutral-900 text-spotify-subdued hover:text-white hover:bg-neutral-800"
           }`}
-          title="Trang chủ"
+          title="Home"
         >
           <SpotifyHomeIcon size={22} filled={currentView === "home"} />
         </button>
 
+        {/* Pill Search Input */}
         <div
           className={`relative flex-1 flex items-center h-11 rounded-full bg-neutral-900 hover:bg-neutral-800 transition-all border border-transparent ${
             isFocused ? "border-white bg-neutral-850 ring-1 ring-white/20" : ""
           }`}
         >
           <SpotifySearchIcon
-            size={20}
+            size={18}
             className="text-spotify-subdued absolute left-3.5 pointer-events-none"
           />
+
           <input
             type="text"
             placeholder="Bạn muốn phát nội dung gì?"
@@ -127,16 +101,28 @@ export const TopNav: React.FC<TopNavProps> = ({
                 onNavigate("search")
               }
             }}
-            className="w-full h-full bg-transparent text-white placeholder:text-spotify-subdued text-sm pl-11 pr-9 rounded-full focus:outline-none font-medium"
+            className="w-full h-full bg-transparent text-white placeholder:text-spotify-subdued text-sm pl-10 pr-16 rounded-full focus:outline-none font-medium"
           />
-          {searchQuery && (
+
+          <div className="absolute right-3 flex items-center gap-2 text-spotify-subdued">
+            {searchQuery && (
+              <button
+                onClick={() => onSearchChange("")}
+                className="hover:text-white focus:outline-none"
+                title="Xóa tìm kiếm"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+            <div className="h-4 w-[1px] bg-neutral-700" />
             <button
-              onClick={() => onSearchChange("")}
-              className="absolute right-3 text-spotify-subdued hover:text-white focus:outline-none"
+              onClick={() => onNavigate("search")}
+              className="hover:text-white focus:outline-none"
+              title="Duyệt tìm"
             >
-              <X className="h-4 w-4" />
+              <Layers className="h-4 w-4" />
             </button>
-          )}
+          </div>
         </div>
       </div>
 
@@ -145,31 +131,29 @@ export const TopNav: React.FC<TopNavProps> = ({
         <Button
           variant="default"
           size="sm"
-          className="hidden md:inline-flex bg-white hover:bg-neutral-200 text-black font-bold text-xs rounded-full h-8 px-3.5 tracking-tight"
+          className="hidden md:inline-flex bg-white hover:bg-neutral-200 text-black font-bold text-xs rounded-full h-8 px-4 tracking-tight"
         >
-          <Sparkles className="h-3.5 w-3.5 mr-1.5 text-amber-500 fill-amber-500" />
-          Khám phá Premium
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden lg:inline-flex text-spotify-subdued hover:text-white text-xs h-8 px-3 rounded-full hover:bg-white/10 font-semibold"
-        >
-          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-          Cài đặt ứng dụng
+          Explore Premium
         </Button>
 
         <button
-          className="h-8 w-8 rounded-full bg-neutral-900 hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors focus:outline-none"
-          title="Thông báo"
+          className="hidden lg:inline-flex items-center gap-1.5 text-white hover:scale-105 text-xs font-bold h-8 px-3 rounded-full hover:bg-white/10 transition-all focus:outline-none"
+          title="Install App"
+        >
+          <ArrowDownCircle className="h-4 w-4 stroke-[2]" />
+          <span>Install App</span>
+        </button>
+
+        <button
+          className="h-8 w-8 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors focus:outline-none"
+          title="Notifications"
         >
           <Bell className="h-4 w-4" />
         </button>
 
         <button
-          className="h-8 w-8 rounded-full bg-neutral-900 hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors hidden sm:flex focus:outline-none"
-          title="Hoạt động bạn bè"
+          className="h-8 w-8 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors hidden sm:flex focus:outline-none"
+          title="Friend Activity"
         >
           <Users className="h-4 w-4" />
         </button>
@@ -189,7 +173,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             className="w-56 bg-neutral-900 border-neutral-800 text-neutral-200 rounded-lg shadow-2xl p-1.5 font-medium"
           >
             <DropdownMenuLabel className="font-semibold text-white px-2 py-1.5 tracking-tight">
-              Tài khoản của bạn
+              Quân Thái (Account)
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-neutral-800" />
             <DropdownMenuItem className="hover:bg-neutral-800 rounded cursor-pointer px-2 py-1.5 text-sm">

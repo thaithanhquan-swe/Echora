@@ -1,6 +1,6 @@
 import React from "react"
+import { PlusCircle, CheckCircle2 } from "lucide-react"
 import { Song, ViewType } from "@/types/music"
-import { SpotifyHeartIcon } from "@/components/icons/SpotifyIcons"
 
 interface PlayerTrackInfoProps {
   currentTrack: Song
@@ -42,17 +42,17 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
         </span>
       </div>
 
-      {/* Heart / Like button */}
+      {/* Spotify "+" / Add to Library button from screenshot */}
       <button
         onClick={() => onToggleLike(currentTrack.id)}
         className="text-spotify-subdued hover:text-white p-1 rounded-full transition-transform active:scale-125 shrink-0 focus:outline-none"
-        title={isLiked ? "Xóa khỏi Bài hát đã thích" : "Lưu vào Bài hát đã thích"}
+        title={isLiked ? "Saved to Your Library" : "Add to Your Library"}
       >
-        <SpotifyHeartIcon
-          size={16}
-          filled={isLiked}
-          className="transition-colors hover:scale-105"
-        />
+        {isLiked ? (
+          <CheckCircle2 className="h-5 w-5 text-spotify-green fill-spotify-green/20" />
+        ) : (
+          <PlusCircle className="h-5 w-5 stroke-[1.8] hover:scale-105" />
+        )}
       </button>
     </div>
   )

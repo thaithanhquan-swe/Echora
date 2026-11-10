@@ -1,4 +1,5 @@
 import React from "react"
+import { PictureInPicture2 } from "lucide-react"
 import {
   SpotifyPlayIcon,
   SpotifyPauseIcon,
@@ -99,6 +100,15 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
         {repeatMode !== "off" && (
           <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-spotify-green" />
         )}
+      </button>
+
+      {/* Mini-player / PIP icon from screenshot */}
+      <button
+        onClick={() => alert("Chế độ cửa sổ thu nhỏ (Miniplayer)!")}
+        className="p-1 text-spotify-subdued hover:text-white transition-colors focus:outline-none hidden sm:block"
+        title="Miniplayer"
+      >
+        <PictureInPicture2 className="h-4 w-4" />
       </button>
     </div>
   )

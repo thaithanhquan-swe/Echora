@@ -46,12 +46,12 @@ interface PlayerContextType {
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined)
 
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentTrack, setCurrentTrack] = useState<Song | null>(MOCK_SONGS[0]) // default first song
+  const [currentTrack, setCurrentTrack] = useState<Song | null>(MOCK_SONGS[0])
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [volume, setVolumeState] = useState<number>(0.7)
   const [isMuted, setIsMuted] = useState<boolean>(false)
-  const [currentTime, setCurrentTime] = useState<number>(0)
-  const [duration, setDuration] = useState<number>(MOCK_SONGS[0].duration)
+  const [currentTime, setCurrentTime] = useState<number>(187) // 3:07 matching screenshot
+  const [duration, setDuration] = useState<number>(MOCK_SONGS[0].duration) // 3:37
   const [queue, setQueue] = useState<Song[]>(MOCK_SONGS.slice(1))
   const [history, setHistory] = useState<Song[]>([])
   const [isShuffled, setIsShuffled] = useState<boolean>(false)
@@ -60,7 +60,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     new Set(MOCK_SONGS.filter(s => s.isLiked).map(s => s.id))
   )
   const [isLyricsOpen, setLyricsOpen] = useState<boolean>(false)
-  const [isRightSidebarOpen, setRightSidebarOpen] = useState<boolean>(false)
+  const [isRightSidebarOpen, setRightSidebarOpen] = useState<boolean>(true) // Open by default matching screenshot
   const [isQueueOpen, setQueueOpen] = useState<boolean>(false)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
