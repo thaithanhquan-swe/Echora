@@ -1,7 +1,7 @@
 import React from "react"
-import { Play, Pause } from "lucide-react"
 import { usePlayer } from "@/context/PlayerContext"
 import { Song } from "@/types/music"
+import { SpotifyPlayIcon, SpotifyPauseIcon } from "@/components/icons/SpotifyIcons"
 
 interface QuickPickCardProps {
   title: string
@@ -33,22 +33,22 @@ export const QuickPickCard: React.FC<QuickPickCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-4 bg-white/5 hover:bg-white/20 rounded-md overflow-hidden cursor-pointer group transition-colors pr-4 h-16 relative"
+      className="flex items-center gap-4 bg-white/5 hover:bg-white/10 rounded overflow-hidden cursor-pointer group transition-colors pr-4 h-14 select-none relative"
     >
       <img
         src={imageUrl}
         alt={title}
-        className="h-16 w-16 object-cover shrink-0 shadow-md"
+        className="h-14 w-14 object-cover shrink-0 shadow-md"
       />
 
-      <span className="font-bold text-sm text-white truncate flex-1">
+      <span className="font-bold text-sm text-white truncate flex-1 tracking-tight">
         {title}
       </span>
 
       {songs.length > 0 && (
         <button
           onClick={handlePlay}
-          className={`h-10 w-10 rounded-full bg-spotify-green text-black flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 ${
+          className={`h-9 w-9 rounded-full bg-spotify-green text-black flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 shrink-0 focus:outline-none ${
             isCurrentPlayingContext && isPlaying
               ? "opacity-100"
               : "opacity-0 group-hover:opacity-100"
@@ -56,9 +56,9 @@ export const QuickPickCard: React.FC<QuickPickCardProps> = ({
           title="Phát"
         >
           {isCurrentPlayingContext && isPlaying ? (
-            <Pause className="h-5 w-5 fill-black" />
+            <SpotifyPauseIcon size={14} className="fill-black text-black" />
           ) : (
-            <Play className="h-5 w-5 fill-black ml-0.5" />
+            <SpotifyPlayIcon size={14} className="fill-black text-black ml-0.5" />
           )}
         </button>
       )}

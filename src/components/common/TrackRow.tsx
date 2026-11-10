@@ -1,8 +1,13 @@
 import React from "react"
-import { Play, Pause, Heart, MoreHorizontal } from "lucide-react"
+import { MoreHorizontal } from "lucide-react"
 import { Song, ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { formatTime } from "@/lib/utils"
+import {
+  SpotifyPlayIcon,
+  SpotifyPauseIcon,
+  SpotifyHeartIcon,
+} from "@/components/icons/SpotifyIcons"
 
 interface TrackRowProps {
   song: Song
@@ -38,7 +43,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
   return (
     <div
       onDoubleClick={() => playTrack(song, contextSongs)}
-      className="grid grid-cols-[16px_1fr_auto] md:grid-cols-[16px_4fr_3fr_minmax(120px,1fr)] lg:grid-cols-[16px_6fr_4fr_3fr_minmax(100px,1fr)] items-center gap-4 px-4 py-2.5 rounded-md hover:bg-white/10 group text-neutral-400 text-sm select-none transition-colors"
+      className="grid grid-cols-[16px_1fr_auto] md:grid-cols-[16px_4fr_3fr_minmax(120px,1fr)] lg:grid-cols-[16px_6fr_4fr_3fr_minmax(100px,1fr)] items-center gap-4 px-4 py-2.5 rounded-md hover:bg-white/10 group text-spotify-subdued text-sm select-none transition-colors"
     >
       {/* 1. Track Number or Play/Pause Button / Equalizer */}
       <div className="flex items-center justify-center w-4 text-center">
@@ -52,7 +57,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         ) : (
           <span
             className={`text-sm tabular-nums group-hover:hidden ${
-              isCurrentSong ? "text-spotify-green font-semibold" : "text-neutral-400"
+              isCurrentSong ? "text-spotify-green font-semibold" : "text-spotify-subdued"
             }`}
           >
             {index + 1}
@@ -64,9 +69,9 @@ export const TrackRow: React.FC<TrackRowProps> = ({
           className="hidden group-hover:flex items-center justify-center text-white focus:outline-none"
         >
           {isCurrentSong && isPlaying ? (
-            <Pause className="h-4 w-4 fill-white" />
+            <SpotifyPauseIcon size={12} className="fill-white text-white" />
           ) : (
-            <Play className="h-4 w-4 fill-white ml-0.5" />
+            <SpotifyPlayIcon size={12} className="fill-white text-white ml-0.5" />
           )}
         </button>
       </div>
@@ -81,15 +86,15 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         <div className="flex flex-col min-w-0">
           <span
             onClick={handlePlayClick}
-            className={`font-medium truncate cursor-pointer hover:underline ${
+            className={`font-semibold tracking-tight truncate cursor-pointer hover:underline ${
               isCurrentSong ? "text-spotify-green" : "text-white"
             }`}
           >
             {song.title}
           </span>
-          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+          <div className="flex items-center gap-1.5 text-xs text-spotify-subdued">
             {song.explicit && (
-              <span className="bg-neutral-600 text-black text-[10px] font-bold px-1 rounded-sm">
+              <span className="bg-neutral-600 text-black text-[10px] font-bold px-1 rounded-sm leading-tight">
                 E
               </span>
             )}
@@ -98,7 +103,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
                 e.stopPropagation()
                 onNavigate && onNavigate("artist", song.artistId)
               }}
-              className="truncate hover:underline hover:text-white cursor-pointer"
+              className="truncate hover:underline hover:text-white cursor-pointer transition-colors"
             >
               {song.artist}
             </span>
@@ -114,7 +119,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
               e.stopPropagation()
               onNavigate && onNavigate("album", song.albumId)
             }}
-            className="text-neutral-400 hover:text-white hover:underline cursor-pointer text-xs truncate"
+            className="text-spotify-subdued hover:text-white hover:underline cursor-pointer text-xs truncate transition-colors"
           >
             {song.album}
           </span>
@@ -123,33 +128,31 @@ export const TrackRow: React.FC<TrackRowProps> = ({
 
       {/* 4. Date Added */}
       {showDateAdded && (
-        <div className="hidden lg:block text-neutral-400 text-xs">
+        <div className="hidden lg:block text-spotify-subdued text-xs">
           {song.addedAt || "1 ngày trước"}
         </div>
       )}
 
       {/* 5. Like button & Duration */}
-      <div className="flex items-center justify-end gap-3 text-neutral-400 text-xs tabular-nums">
+      <div className="flex items-center justify-end gap-3 text-spotify-subdued text-xs tabular-nums">
         <button
           onClick={(e) => {
             e.stopPropagation()
             toggleLike(song.id)
           }}
-          className={`opacity-0 group-hover:opacity-100 transition-opacity ${
+          className={`opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none ${
             isLiked ? "!opacity-100 text-spotify-green" : "hover:text-white"
           }`}
           title={isLiked ? "Bỏ thích" : "Thích"}
         >
-          <Heart
-            className={`h-4 w-4 ${isLiked ? "fill-spotify-green text-spotify-green" : ""}`}
-          />
+          <SpotifyHeartIcon size={16} filled={isLiked} />
         </button>
 
         <span className="w-10 text-right">{formatTime(song.duration)}</span>
 
         <button
           onClick={(e) => e.stopPropagation()}
-          className="opacity-0 group-hover:opacity-100 hover:text-white transition-opacity p-1"
+          className="opacity-0 group-hover:opacity-100 hover:text-white transition-opacity p-1 focus:outline-none"
         >
           <MoreHorizontal className="h-4 w-4" />
         </button>

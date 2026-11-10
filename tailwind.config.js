@@ -14,6 +14,18 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: [
+          'Circular Std',
+          'CircularSp',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Plus Jakarta Sans',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -48,36 +60,25 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Spotify specific accent colors
+        // Official Spotify Color Palette
         spotify: {
-          green: "#1ED760",
+          green: "#1ed760",
           lightgreen: "#1fdf64",
+          brightgreen: "#3be477",
+          darkgreen: "#169c46",
           black: "#121212",
-          dark: "#0a0a0a",
+          dark: "#000000",
           elevated: "#181818",
-          highlight: "#282828",
-          subdued: "#a7a7a7",
+          highlight: "#242424",
+          hover: "#2a2a2a",
+          subdued: "#b3b3b3",
           border: "#282828",
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        lg: "8px",
+        md: "6px",
+        sm: "4px",
       },
     },
   },

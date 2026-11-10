@@ -20,8 +20,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
     return "Chào buổi tối"
   }
 
-  // Liked songs pseudo-playlist for quick pick
-  const likedSongsList = MOCK_SONGS.filter(s => likedSongIds.has(s.id))
+  const likedSongsList = MOCK_SONGS.filter((s) => likedSongIds.has(s.id))
 
   const quickPicks = [
     {
@@ -64,7 +63,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
 
   return (
     <div className="p-6 space-y-8 animate-in fade-in duration-300">
-      {/* Top Hero Greeting & Quick 6-Grid */}
+      {/* Top Greeting & Quick 6-Grid */}
       <div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight mb-5">
           {getGreeting()}
@@ -90,11 +89,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
               Dành Cho Bạn
             </h2>
-            <p className="text-xs text-neutral-400 mt-1">
+            <p className="text-xs text-spotify-subdued mt-1">
               Những danh sách phát tuyển chọn riêng theo sở thích của bạn
             </p>
           </div>
-          <button className="text-xs font-bold text-neutral-400 hover:underline hover:text-white">
+          <button className="text-xs font-bold text-spotify-subdued hover:underline hover:text-white transition-colors focus:outline-none">
             Hiện tất cả
           </button>
         </div>
@@ -122,11 +121,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
               Nghệ Sĩ Nổi Tiếng
             </h2>
-            <p className="text-xs text-neutral-400 mt-1">
+            <p className="text-xs text-spotify-subdued mt-1">
               Các nghệ sĩ đang thống trị các bảng xếp hạng âm nhạc
             </p>
           </div>
-          <button className="text-xs font-bold text-neutral-400 hover:underline hover:text-white">
+          <button className="text-xs font-bold text-spotify-subdued hover:underline hover:text-white transition-colors focus:outline-none">
             Hiện tất cả
           </button>
         </div>
@@ -154,11 +153,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             <h2 className="text-2xl font-bold text-white tracking-tight hover:underline cursor-pointer">
               Album & Đĩa Đơn Phổ Biến
             </h2>
-            <p className="text-xs text-neutral-400 mt-1">
+            <p className="text-xs text-spotify-subdued mt-1">
               Những phát hành tạo nên làn sóng lớn gần đây
             </p>
           </div>
-          <button className="text-xs font-bold text-neutral-400 hover:underline hover:text-white">
+          <button className="text-xs font-bold text-spotify-subdued hover:underline hover:text-white transition-colors focus:outline-none">
             Hiện tất cả
           </button>
         </div>
