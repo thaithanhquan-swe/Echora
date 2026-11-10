@@ -185,3 +185,60 @@ h1, h2, h3, h4, h5, h6 {
 .animate-wave-4 {
   animation: spotify-wave-4 0.8s ease-in-out infinite;
 }
+
+.marquee-container {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-content {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.marquee-content[data-overflow="true"] {
+  max-width: none;
+}
+
+.marquee-container:hover .marquee-content[data-overflow="true"],
+.marquee-container:focus-within .marquee-content[data-overflow="true"] {
+  animation: marquee-scroll var(--marquee-duration) ease-in-out 0.35s 1 both;
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(calc(-1 * var(--marquee-distance)));
+  }
+}
+
+.panel-resize-handle {
+  position: relative;
+  z-index: 10;
+  width: 4px;
+  flex: 0 0 4px;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.panel-resize-handle::after {
+  width: 1px;
+  height: 100%;
+  border-radius: 9999px;
+  background: transparent;
+  content: "";
+  transition: background-color 150ms ease;
+}
+
+.panel-resize-handle:hover::after,
+.panel-resize-handle:focus-visible::after,
+.panel-resize-handle:active::after {
+  background: #1ed760;
+}

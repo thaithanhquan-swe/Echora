@@ -5,6 +5,7 @@ import { SearchView } from "@/components/views/SearchView"
 import { PlaylistDetailView } from "@/components/views/PlaylistDetailView"
 import { ArtistDetailView } from "@/components/views/ArtistDetailView"
 import { LikedSongsView } from "@/components/views/LikedSongsView"
+import { LibraryView } from "@/components/views/LibraryView"
 
 interface MainContentProps {
   currentView: ViewType
@@ -53,6 +54,9 @@ export const MainContent: React.FC<MainContentProps> = ({
 
       case "liked-songs":
         return <LikedSongsView onNavigate={onNavigate} />
+
+      case "library":
+        return <LibraryView onNavigate={onNavigate} />
 
       default:
         return <HomeView onNavigate={onNavigate} />

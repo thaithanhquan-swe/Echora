@@ -13,6 +13,7 @@ interface SidebarProps {
   selectedId?: string
   onNavigate: (view: ViewType, id?: string) => void
   isCollapsed?: boolean
+  width?: number
   onToggleCollapse?: () => void
 }
 
@@ -21,6 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedId,
   onNavigate,
   isCollapsed = false,
+  width = 260,
   onToggleCollapse,
 }) => {
   const { currentTrack, isPlaying, likedSongIds } = usePlayer()
@@ -52,9 +54,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`bg-spotify-black rounded-lg flex flex-col h-full overflow-hidden transition-all duration-300 shrink-0 ${
-        isCollapsed ? "w-20" : "w-[340px] xl:w-[380px] 2xl:w-[420px]"
-      }`}
+      style={{ width: isCollapsed ? 72 : width }}
+      data-resizable-panel="library"
+      className="bg-spotify-black rounded-lg flex-col h-full overflow-hidden shrink-0 hidden md:flex"
     >
       {/* 1. Header */}
       <LibraryHeader
@@ -100,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => onNavigate("liked-songs")}
         />
 
-        {/* YouTube playlists */}
+        {/* Echora playlists */}
         {filteredItems.map((item) => {
           const isSelected =
             (currentView === "playlist" || currentView === "album") &&

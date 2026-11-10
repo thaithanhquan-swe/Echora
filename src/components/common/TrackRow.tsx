@@ -1,8 +1,9 @@
 import React from "react"
-import { Play, Pause, Heart, MoreHorizontal } from "lucide-react"
+import { Play, Pause, Heart } from "lucide-react"
 import { Song, ViewType } from "@/types/music"
 import { usePlayer } from "@/context/PlayerContext"
 import { formatTime } from "@/lib/utils"
+import { MarqueeText } from "./MarqueeText"
 
 interface TrackRowProps {
   song: Song
@@ -38,10 +39,10 @@ export const TrackRow: React.FC<TrackRowProps> = ({
   return (
     <div
       onDoubleClick={() => playTrack(song, contextSongs)}
-      className="grid grid-cols-[16px_1fr_auto] md:grid-cols-[16px_4fr_3fr_minmax(120px,1fr)] lg:grid-cols-[16px_6fr_4fr_3fr_minmax(100px,1fr)] items-center gap-4 px-4 py-2.5 rounded-md hover:bg-white/10 group text-spotify-subdued text-sm select-none transition-colors"
+      className="grid grid-cols-[16px_1fr_auto] md:grid-cols-[20px_4fr_3fr_minmax(120px,1fr)] lg:grid-cols-[24px_6fr_4fr_3fr_minmax(100px,1fr)] items-center gap-3 sm:gap-4 px-3 sm:px-4 py-2 sm:py-2.5 rounded-md hover:bg-white/10 group text-spotify-subdued text-sm select-none transition-colors"
     >
       {/* 1. Track Number or Play/Pause Button / Equalizer */}
-      <div className="flex items-center justify-center w-4 text-center">
+      <div className="flex items-center justify-center w-5 text-center">
         {isCurrentSong && isPlaying ? (
           <div className="flex items-end gap-[2px] h-3.5 group-hover:hidden">
             <span className="w-[3px] bg-spotify-green animate-wave-1 rounded-full" />
@@ -64,9 +65,9 @@ export const TrackRow: React.FC<TrackRowProps> = ({
           className="hidden group-hover:flex items-center justify-center text-white focus:outline-none"
         >
           {isCurrentSong && isPlaying ? (
-            <Pause className="h-4 w-4 fill-white text-white" />
+            <Pause className="h-4 w-4 sm:h-5 sm:w-5 fill-white text-white" />
           ) : (
-            <Play className="h-4 w-4 fill-white text-white ml-0.5" />
+            <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-white text-white ml-0.5" />
           )}
         </button>
       </div>
@@ -76,18 +77,19 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         <img
           src={song.coverUrl}
           alt={song.title}
-          className="h-10 w-10 rounded object-cover shrink-0 shadow"
+          loading="lazy"
+          className="h-10 w-10 sm:h-12 sm:w-12 rounded object-cover shrink-0 shadow"
         />
         <div className="flex flex-col min-w-0">
-          <span
+          <MarqueeText
             onClick={handlePlayClick}
-            className={`font-semibold tracking-tight truncate cursor-pointer hover:underline ${
+            className={`font-semibold tracking-tight cursor-pointer hover:underline text-sm sm:text-base ${
               isCurrentSong ? "text-spotify-green" : "text-white"
             }`}
           >
             {song.title}
-          </span>
-          <div className="flex items-center gap-1.5 text-xs text-spotify-subdued">
+          </MarqueeText>
+          <div className="flex items-center gap-1.5 text-xs sm:text-sm text-spotify-subdued">
             {song.explicit && (
               <span className="bg-neutral-600 text-black text-[10px] font-bold px-1 rounded-sm leading-tight">
                 E
@@ -114,7 +116,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
               e.stopPropagation()
               onNavigate && onNavigate("album", song.albumId)
             }}
-            className="text-spotify-subdued hover:text-white hover:underline cursor-pointer text-xs truncate transition-colors"
+            className="text-spotify-subdued hover:text-white hover:underline cursor-pointer text-xs sm:text-sm truncate transition-colors"
           >
             {song.album}
           </span>
@@ -123,13 +125,13 @@ export const TrackRow: React.FC<TrackRowProps> = ({
 
       {/* 4. Date Added */}
       {showDateAdded && (
-        <div className="hidden lg:block text-spotify-subdued text-xs">
+        <div className="hidden lg:block text-spotify-subdued text-xs sm:text-sm">
           {song.addedAt || "—"}
         </div>
       )}
 
       {/* 5. Like button & Duration */}
-      <div className="flex items-center justify-end gap-3 text-spotify-subdued text-xs tabular-nums">
+      <div className="flex items-center justify-end gap-3 text-spotify-subdued text-xs sm:text-sm tabular-nums">
         <button
           onClick={(e) => {
             e.stopPropagation()
@@ -141,18 +143,12 @@ export const TrackRow: React.FC<TrackRowProps> = ({
           title={isLiked ? "Bỏ thích" : "Thích"}
         >
           <Heart
-            className={`h-4 w-4 ${isLiked ? "fill-spotify-green text-spotify-green" : ""}`}
+            className={`h-4 w-4 sm:h-5 sm:w-5 ${isLiked ? "fill-spotify-green text-spotify-green" : ""}`}
           />
         </button>
 
         <span className="w-10 text-right">{formatTime(song.duration)}</span>
 
-        <button
-          onClick={(e) => e.stopPropagation()}
-          className="opacity-0 group-hover:opacity-100 hover:text-white transition-opacity p-1 focus:outline-none"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
       </div>
     </div>
   )
