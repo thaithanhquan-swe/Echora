@@ -9,16 +9,6 @@ import {
   Search,
   Radio,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { ViewType } from "@/types/music"
 
 interface TopNavProps {
@@ -120,18 +110,10 @@ export const TopNav: React.FC<TopNavProps> = ({
         </div>
       </div>
 
-      {/* Right: Actions & User profile */}
+      {/* Right: Actions (Removed Explore Premium and Account per user request) */}
       <div className="flex items-center gap-2 shrink-0">
-        <Button
-          variant="default"
-          size="sm"
-          className="hidden md:inline-flex bg-white hover:bg-neutral-200 text-black font-bold text-xs rounded-full h-8 px-4 tracking-tight"
-        >
-          Explore Premium
-        </Button>
-
         <button
-          className="hidden lg:inline-flex items-center gap-1.5 text-white hover:scale-105 text-xs font-bold h-8 px-3 rounded-full hover:bg-white/10 transition-all focus:outline-none"
+          className="hidden sm:inline-flex items-center gap-1.5 text-white hover:scale-105 text-xs font-bold h-8 px-3 rounded-full hover:bg-white/10 transition-all focus:outline-none"
           title="Install App"
         >
           <ArrowDownCircle className="h-4 w-4 stroke-[2]" />
@@ -146,45 +128,11 @@ export const TopNav: React.FC<TopNavProps> = ({
         </button>
 
         <button
-          className="h-8 w-8 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors hidden sm:flex focus:outline-none"
+          className="h-8 w-8 rounded-full hover:bg-neutral-800 flex items-center justify-center text-spotify-subdued hover:text-white transition-colors flex focus:outline-none"
           title="Friend Activity"
         >
           <Users className="h-4 w-4 stroke-[2]" />
         </button>
-
-        {/* User profile avatar dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="h-9 w-9 rounded-full ring-2 ring-transparent hover:ring-neutral-700 transition-all focus:outline-none ml-1">
-              <Avatar className="h-9 w-9 border border-neutral-700">
-                <AvatarImage src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80" />
-                <AvatarFallback>QT</AvatarFallback>
-              </Avatar>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-56 bg-neutral-900 border-neutral-800 text-neutral-200 rounded-lg shadow-2xl p-1.5 font-medium"
-          >
-            <DropdownMenuLabel className="font-semibold text-white px-2 py-1.5 tracking-tight">
-              Quân Thái (Account)
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-neutral-800" />
-            <DropdownMenuItem className="hover:bg-neutral-800 rounded cursor-pointer px-2 py-1.5 text-sm">
-              Hồ sơ
-            </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-neutral-800 rounded cursor-pointer px-2 py-1.5 text-sm">
-              Nâng cấp lên Premium
-            </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-neutral-800 rounded cursor-pointer px-2 py-1.5 text-sm">
-              Cài đặt
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-neutral-800" />
-            <DropdownMenuItem className="hover:bg-neutral-800 rounded cursor-pointer px-2 py-1.5 text-sm text-red-400">
-              Đăng xuất
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </header>
   )

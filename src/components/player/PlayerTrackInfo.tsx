@@ -28,17 +28,12 @@ export const PlayerTrackInfo: React.FC<PlayerTrackInfoProps> = ({
 
       {/* Title & Artist */}
       <div className="flex flex-col min-w-0 pr-1">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span
-            onClick={() => onNavigate && onNavigate("album", currentTrack.albumId)}
-            className="text-sm font-semibold text-white truncate hover:underline cursor-pointer tracking-tight"
-          >
-            {currentTrack.title}
-          </span>
-          <span className="text-[10px] bg-neutral-800 text-spotify-green border border-spotify-green/40 px-1.5 py-0.5 rounded-full font-bold shrink-0">
-            Preview 30s
-          </span>
-        </div>
+        <span
+          onClick={() => onNavigate && onNavigate("album", currentTrack.albumId)}
+          className="text-sm font-semibold text-white truncate hover:underline cursor-pointer tracking-tight"
+        >
+          {currentTrack.title}
+        </span>
         <span
           onClick={() => onNavigate && onNavigate("artist", currentTrack.artistId)}
           className="text-xs text-spotify-subdued truncate hover:underline hover:text-white cursor-pointer transition-colors"

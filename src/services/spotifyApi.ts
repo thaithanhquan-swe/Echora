@@ -78,7 +78,7 @@ export function parseDurationToSeconds(duration?: string, duration_ms?: number):
   if (duration_ms && duration_ms > 0) {
     return Math.round(duration_ms / 1000)
   }
-  if (!duration) return 30
+  if (!duration) return 200
   const parts = duration.split(":").map(Number)
   if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
     return parts[0] * 60 + parts[1]
@@ -86,7 +86,7 @@ export function parseDurationToSeconds(duration?: string, duration_ms?: number):
   if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
     return parts[0] * 3600 + parts[1] * 60 + parts[2]
   }
-  return 30
+  return 200
 }
 
 export function mapApiTrackToSong(
@@ -103,9 +103,8 @@ export function mapApiTrackToSong(
     }
   }
 
-  // Previews from Spotify CDN are 30s. If preview_url is present, duration for playback is ~30s
+  // Display the FULL song duration (e.g. 3:23, 4:05)
   const fullDuration = parseDurationToSeconds(raw.duration, raw.duration_ms)
-  const playbackDuration = raw.preview_url ? 30 : fullDuration
 
   return {
     id: raw.id,
@@ -114,7 +113,7 @@ export function mapApiTrackToSong(
     artistId: primaryArtistId,
     album: raw.album || fallbackAlbum || "Single",
     albumId: fallbackAlbumId || "",
-    duration: playbackDuration,
+    duration: fullDuration,
     coverUrl: raw.thumbnail || fallbackCover || DEFAULT_COVER,
     audioUrl: raw.preview_url || "",
     explicit: Boolean(raw.explicit),
@@ -144,7 +143,7 @@ export function mapApiAlbumToAlbum(raw: SpotifyApiAlbum): Album {
     artistId: artistId,
     album: raw.name,
     albumId: raw.id,
-    duration: t.preview_url ? 30 : parseDurationToSeconds(t.duration, t.duration_ms),
+    duration: parseDurationToSeconds(t.duration, t.duration_ms),
     coverUrl: coverUrl,
     audioUrl: t.preview_url || "",
     explicit: Boolean(t.explicit),
@@ -196,7 +195,7 @@ export function mapApiPlaylistToPlaylist(
     artistId: "",
     album: raw.name,
     albumId: raw.id,
-    duration: t.preview_url ? 30 : parseDurationToSeconds(t.duration, t.duration_ms),
+    duration: parseDurationToSeconds(t.duration, t.duration_ms),
     coverUrl: coverUrl,
     audioUrl: t.preview_url || "",
     explicit: Boolean(t.explicit),
@@ -217,9 +216,31 @@ export function mapApiPlaylistToPlaylist(
 }
 
 // ==========================================
-// BUILT-IN FALLBACK CATALOG (Guarantees search never returns 0 results during rate limits)
+// BUILT-IN FALLBACK CATALOG
 // ==========================================
 const FALLBACK_TRACKS: SpotifyApiTrack[] = [
+  {
+    id: "loi-hua-nam-18",
+    title: "Lời Hứa Năm 18",
+    artist: "Jaysonlei",
+    album: "Lời Hứa Năm 18",
+    thumbnail: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&auto=format&fit=crop&q=80",
+    duration: "3:23",
+    duration_ms: 203000,
+    preview_url: "https://p.scdn.co/mp3-preview/dbf78395209a0c86218ceb411b01b2e7bdd52dcd",
+    url: "https://open.spotify.com/track/loi-hua-nam-18",
+  },
+  {
+    id: "nhu-mot-nguoi-rung",
+    title: "Như Một Người Rưng",
+    artist: "Osad, Hà An Huy",
+    album: "Như Một Người Rưng",
+    thumbnail: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&auto=format&fit=crop&q=80",
+    duration: "2:57",
+    duration_ms: 177000,
+    preview_url: "https://p.scdn.co/mp3-preview/62b733581bf63326bafc070115df7c1e67474a2a",
+    url: "https://open.spotify.com/track/nhu-mot-nguoi-rung",
+  },
   {
     id: "5x5Vx0Musv3LSUKzjY73mA",
     title: "Hãy Trao Cho Anh",
@@ -594,11 +615,9 @@ export const spotifyApi = {
           t.artist.toLowerCase().includes(qLower) ||
           (t.album && t.album.toLowerCase().includes(qLower))
       ).slice(0, limit)
-      // If no direct match, return top tracks
       if (results.length === 0 && !qLower) {
         results = FALLBACK_TRACKS.slice(0, limit)
       } else if (results.length === 0) {
-        // Partial search
         results = FALLBACK_TRACKS.filter(
           (t) =>
             t.title.toLowerCase().split(" ").some((w) => qLower.includes(w)) ||
