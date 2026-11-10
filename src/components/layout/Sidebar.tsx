@@ -29,20 +29,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [filter, setFilter] = useState<LibraryFilterType>("all")
   const [searchLibrary, setSearchLibrary] = useState("")
   const [playlists, setPlaylists] = useState<Playlist[]>([])
+  const [playlistError, setPlaylistError] = useState("")
 
   useEffect(() => {
-    let isMounted = true
-    searchYouTubePlaylists("nhạc Việt", 12)
-      .then((res) => {
-        if (!isMounted) return
-        setPlaylists(res)
-      })
-      .catch(() => {})
+    if (filter !== "playlists" || isCollapsed) {
+      setPlaylists([])
+      setPlaylistError("")
+      return
+    }
+
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      setPlaylistError("")
+      searchYouTubePlaylists(searchLibrary.trim() || "nhạc Việt", 12, controller.signal)
+        .then(setPlaylists)
+        .catch((error: unknown) => {
+          if (!controller.signal.aborted) {
+            setPlaylistError(error instanceof Error ? error.message : "Không thể tải danh sách phát.")
+          }
+        })
+    }, 400)
 
     return () => {
-      isMounted = false
+      window.clearTimeout(timer)
+      controller.abort()
     }
-  }, [])
+  }, [filter, isCollapsed, searchLibrary])
 
   const filteredItems = playlists.filter((p) => {
     if (!searchLibrary) return true
@@ -101,6 +113,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }
           onClick={() => onNavigate("liked-songs")}
         />
+
+        {playlistError && !isCollapsed && (
+          <p role="status" className="px-3 py-2 text-xs text-spotify-subdued">
+            {playlistError}
+          </p>
+        )}
+
+        {filter === "playlists" && !playlistError && filteredItems.length === 0 && !isCollapsed && (
+          <p className="px-3 py-2 text-xs text-spotify-subdued">
+            Nhập từ khóa để tìm danh sách phát.
+          </p>
+        )}
 
         {/* Echora playlists */}
         {filteredItems.map((item) => {

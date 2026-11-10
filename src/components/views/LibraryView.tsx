@@ -18,27 +18,36 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate }) => {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [artists, setArtists] = useState<Artist[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   useEffect(() => {
-    let isMounted = true
-    Promise.all([
-      searchYouTubePlaylists("nhạc Việt", 12),
-      searchYouTubeChannels("nhạc Việt", 8),
-    ])
-      .then(([pl, ar]) => {
-        if (!isMounted) return
-        setPlaylists(pl)
-        setArtists(ar)
+    const controller = new AbortController()
+    setError("")
+    setPlaylists([])
+    setArtists([])
+
+    if (filter === "all") {
+      setLoading(false)
+      return () => controller.abort()
+    }
+
+    setLoading(true)
+    const request = filter === "playlists"
+      ? searchYouTubePlaylists("nhạc Việt", 12, controller.signal).then(setPlaylists)
+      : searchYouTubeChannels("nhạc Việt", 8, controller.signal).then(setArtists)
+
+    request
+      .catch((cause: unknown) => {
+        if (!controller.signal.aborted) {
+          setError(cause instanceof Error ? cause.message : "Không thể tải thư viện.")
+        }
       })
-      .catch(() => {})
       .finally(() => {
-        if (isMounted) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       })
 
-    return () => {
-      isMounted = false
-    }
-  }, [])
+    return () => controller.abort()
+  }, [filter])
 
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 animate-in fade-in duration-300 select-none pb-24">
@@ -100,6 +109,8 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate }) => {
           <Loader2 className="h-8 w-8 animate-spin text-spotify-green mb-3" />
           <p className="text-sm font-semibold text-white">Đang tải thư viện...</p>
         </div>
+      ) : error ? (
+        <p role="status" className="py-12 text-center text-sm text-spotify-subdued">{error}</p>
       ) : (
         <>
           {/* Playlists */}

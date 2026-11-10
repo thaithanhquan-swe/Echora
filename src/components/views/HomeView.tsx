@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react"
-import { ViewType, Song, Playlist, Artist } from "@/types/music"
+import { ViewType, Song } from "@/types/music"
 import { QuickPickCard } from "@/components/common/QuickPickCard"
-import { MediaCard } from "@/components/common/MediaCard"
 import { TrackRow } from "@/components/common/TrackRow"
 import { Badge } from "@/components/ui/badge"
 import { usePlayer } from "@/context/PlayerContext"
-import { getTrendingVideos, searchYouTubePlaylists, searchYouTubeChannels } from "@/services/youtubeApi"
+import { getTrendingVideos } from "@/services/youtubeApi"
 import { Loader2 } from "lucide-react"
 
 interface HomeViewProps {
   onNavigate: (view: ViewType, id?: string) => void
 }
 
-type ContentFilter = "all" | "music" | "playlists" | "artists"
+type ContentFilter = "all" | "music"
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   const [filter, setFilter] = useState<ContentFilter>("all")
@@ -20,20 +19,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [songs, setSongs] = useState<Song[]>([])
-  const [playlists, setPlaylists] = useState<Playlist[]>([])
-  const [artists, setArtists] = useState<Artist[]>([])
 
   useEffect(() => {
     const controller = new AbortController()
-    Promise.all([
-      getTrendingVideos(24, controller.signal),
-      searchYouTubePlaylists("nhạc Việt", 12, controller.signal),
-      searchYouTubeChannels("nhạc Việt", 10, controller.signal),
-    ])
-      .then(([videoList, playlistList, artistList]) => {
+    getTrendingVideos(24, controller.signal)
+      .then((videoList) => {
         setSongs(videoList)
-        setPlaylists(playlistList)
-        setArtists(artistList)
       })
       .catch((e) => {
         if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "Không thể tải dữ liệu Echora.")
@@ -54,8 +45,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   const filterOptions: Array<[ContentFilter, string]> = [
     ["all", "Tất cả"],
     ["music", "Bài hát thịnh hành"],
-    ["playlists", "Danh sách phát"],
-    ["artists", "Kênh nghệ sĩ"],
   ]
 
   return (
@@ -125,53 +114,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             </section>
           )}
 
-          {/* Playlists Grid */}
-          {(filter === "all" || filter === "playlists") && playlists.length > 0 && (
-            <section>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-4">
-                Danh sách phát Echora
-              </h2>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 sm:gap-6">
-                {playlists.map((p) => (
-                  <MediaCard
-                    key={p.id}
-                    id={p.id}
-                    title={p.title}
-                    subtitle={`Bởi ${p.owner}`}
-                    imageUrl={p.coverUrl}
-                    type="playlist"
-                    songs={p.songs}
-                    onClick={() => onNavigate("playlist", p.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Artists Grid */}
-          {(filter === "all" || filter === "artists") && artists.length > 0 && (
-            <section>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-4">
-                Kênh nghệ sĩ
-              </h2>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 sm:gap-6">
-                {artists.map((a) => (
-                  <MediaCard
-                    key={a.id}
-                    id={a.id}
-                    title={a.name}
-                    subtitle="Kênh Echora"
-                    imageUrl={a.avatarUrl}
-                    type="artist"
-                    songs={a.topSongs}
-                    onClick={() => onNavigate("artist", a.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {songs.length === 0 && playlists.length === 0 && (
+          {songs.length === 0 && (
             <div className="text-center py-20 text-spotify-subdued">
               Echora chưa tìm thấy nội dung phù hợp. Hãy thử lại sau.
             </div>

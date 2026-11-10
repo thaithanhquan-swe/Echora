@@ -6,7 +6,12 @@ import { MediaCard } from "@/components/common/MediaCard"
 import { CategoryGrid } from "./search/CategoryGrid"
 import { TopResultCard } from "./search/TopResultCard"
 import { Badge } from "@/components/ui/badge"
-import { searchYouTubeVideos, searchYouTubeChannels, searchYouTubePlaylists } from "@/services/youtubeApi"
+import {
+  searchYouTubeCatalog,
+  searchYouTubeVideos,
+  searchYouTubeChannels,
+  searchYouTubePlaylists,
+} from "@/services/youtubeApi"
 import { Loader2 } from "lucide-react"
 
 interface SearchViewProps {
@@ -40,14 +45,23 @@ export const SearchView: React.FC<SearchViewProps> = ({ searchQuery, onNavigate 
     setError("")
     const timer = window.setTimeout(async () => {
       try {
+        if (activeTab === "all") {
+          const results = await searchYouTubeCatalog(query, 20, controller.signal)
+          if (controller.signal.aborted) return
+          setSongs(results.songs)
+          setArtists(results.artists)
+          setPlaylists(results.playlists)
+          return
+        }
+
         const [videoResults, channelResults, playlistResults] = await Promise.all([
-          activeTab === "all" || activeTab === "tracks"
-            ? searchYouTubeVideos(query, activeTab === "tracks" ? 20 : 8, controller.signal)
+          activeTab === "tracks"
+            ? searchYouTubeVideos(query, 20, controller.signal)
             : Promise.resolve([]),
-          activeTab === "all" || activeTab === "artists"
+          activeTab === "artists"
             ? searchYouTubeChannels(query, 10, controller.signal)
             : Promise.resolve([]),
-          activeTab === "all" || activeTab === "playlists"
+          activeTab === "playlists"
             ? searchYouTubePlaylists(query, 10, controller.signal)
             : Promise.resolve([]),
         ])
